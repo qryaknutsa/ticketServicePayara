@@ -1,13 +1,15 @@
 package com.example.ticketServicePayara.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.List;
 
-
 public enum TicketType {
-    CHEAP("cheap"),
-    BUDGETARY("budgetary"),
-    USUAL("usual"),
-    VIP("vip");
+    CHEAP("CHEAP"),
+    BUDGETARY("BUDGETARY"),
+    USUAL("USUAL"),
+    VIP("VIP");
 
     private final String value;
 
@@ -20,5 +22,21 @@ public enum TicketType {
         else if(type == USUAL) return List.of(TicketType.CHEAP, TicketType.BUDGETARY);
         else if(type == BUDGETARY) return List.of(TicketType.CHEAP);
         else return List.of();
+    }
+
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
+
+
+    @JsonCreator
+    public static TicketType fromValue(String value) {
+        for (TicketType country : values()) {
+            if (country.value.equals(value)) {
+                return country;
+            }
+        }
+        throw new IllegalArgumentException("Invalid country value: " + value);
     }
 }

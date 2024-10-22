@@ -14,6 +14,12 @@
 
     <mvc:annotation-driven/>
 
+    <bean id="validatorFactory" class="jakarta.validation.Validation" factory-method="buildDefaultValidatorFactory"/>
+
+    <!-- Конфигурация валидатора -->
+    <bean id="validator" factory-bean="validatorFactory" factory-method="getValidator"/>
+
+
     <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
         <property name="jndiName" value="soa"/>
         <property name="resourceRef" value="true"/>

@@ -8,12 +8,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.FIELD, ElementType.PARAMETER })
-@Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EnumValidator.class)
-public @interface EnumValid {
-    String message() default "Недопустимое значение";
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidEnum {
+    String message() default "Недопустимое значение для перечисления";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
-    Class<? extends Enum<?>> enumClass();
+
+    Class<? extends Enum<?>> enumClass(); // Класс перечисления
 }

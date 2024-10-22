@@ -1,5 +1,6 @@
 package com.example.ticketServicePayara.dao;
 
+
 import com.example.ticketServicePayara.model.Location;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -29,9 +31,28 @@ public class LocationDao {
         return entity;
     }
     @Transactional
-    public void update(Location entity){
-        entityManager.merge(entity);
+    public void update(Location location, Map<String, Object> updates){
+        updates.forEach((field, value) -> {
+            switch (field) {
+                case "x":
+                    location.setX((int) value);
+                    break;
+                case "y":
+                    location.setY((double) value);
+                    break;
+                case "z":
+                    location.setZ((double) value);
+                    break;
+                case "name":
+                    location.setName((String) value);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown field in location: " + field);
+            }
+        });
+        entityManager.merge(location);
     }
+
     @Transactional
     public void deleteById(int id){
         Location location = getById(id);

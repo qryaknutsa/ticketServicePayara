@@ -2,13 +2,14 @@ package com.example.ticketServicePayara.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public enum HairColor {
-    RED("red"),
-    BLACK("black"),
-    BLUE("blue"),
-    ORANGE("orange"),
-    WHITE("white");
+    RED("RED"),
+    BLACK("BLACK"),
+    BLUE("BLUE"),
+    ORANGE("ORANGE"),
+    WHITE("WHITE");
 
     private final String value;
 
@@ -22,10 +23,12 @@ public enum HairColor {
     }
 
     @JsonCreator
-    public static HairColor fromString(String color) {
-        if (color == null) {
-            throw new IllegalArgumentException("Color cannot be null");
+    public static HairColor fromValue(String value) {
+        for (HairColor country : values()) {
+            if (country.value.equals(value)) {
+                return country;
+            }
         }
-        return HairColor.valueOf(color.toUpperCase());
+        throw new IllegalArgumentException("Invalid country value: " + value);
     }
 }
