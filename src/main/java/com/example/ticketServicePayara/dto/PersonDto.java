@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,8 @@ public class PersonDto implements Serializable {
     @NotNull
     private int height;
 
+    @Size(min = 2, max = 50)
+    private String name;
 
     @EnumValid(enumClass = EyeColor.class, message = "Некорректное значение для цвета глаз")
     private EyeColor eyeColor;

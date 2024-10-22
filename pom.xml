@@ -14,18 +14,7 @@
     </properties>
 
   <dependencies>
-
-<!--      spring-->
-<!--      <dependency>-->
-<!--          <groupId>org.springframework.data</groupId>-->
-<!--          <artifactId>spring-data-commons</artifactId>-->
-<!--          <version>3.3.4</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--          <groupId>org.springframework.data</groupId>-->
-<!--          <artifactId>spring-data-jpa</artifactId>-->
-<!--          <version>3.3.4</version>-->
-<!--      </dependency>-->
+<!--      SPRING-->
       <dependency>
           <groupId>org.springframework</groupId>
           <artifactId>spring-core</artifactId>
@@ -46,29 +35,35 @@
           <artifactId>spring-webmvc</artifactId>
           <version>${spring.version}</version>
       </dependency>
+
+<!--      SPRING DB-->
       <dependency>
           <groupId>org.springframework</groupId>
           <artifactId>spring-orm</artifactId>
-          <version>5.3.20</version>
+          <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jdbc</artifactId>
+          <version>${spring.version}</version>
       </dependency>
 
-
-<!--      jakarta-->
+<!--      JAKARTA-->
       <dependency>
           <groupId>jakarta.persistence</groupId>
           <artifactId>jakarta.persistence-api</artifactId>
-          <version>3.1.0</version> <!-- версия для Jakarta EE 10 -->
+          <version>3.2.0</version> <!-- версия для Jakarta EE 10 -->
       </dependency>
       <dependency>
           <groupId>jakarta.validation</groupId>
           <artifactId>jakarta.validation-api</artifactId>
           <version>3.1.0</version>
       </dependency>
-<!--      <dependency>-->
-<!--          <groupId>jakarta.transaction</groupId>-->
-<!--          <artifactId>jakarta.transaction-api</artifactId>-->
-<!--          <version>2.0.1</version>-->
-<!--      </dependency>-->
+      <dependency>
+          <groupId>jakarta.transaction</groupId>
+          <artifactId>jakarta.transaction-api</artifactId>
+          <version>2.0.1</version>
+      </dependency>
 
 
 <!--      jackson-->
@@ -91,10 +86,11 @@
 
 <!--      eclipseLink-->
       <dependency>
-          <groupId>org.eclipse.persistence</groupId>
-          <artifactId>org.eclipse.persistence.jpa</artifactId>
-          <version>3.0.2</version>
+          <groupId>org.hibernate.orm</groupId>
+          <artifactId>hibernate-core</artifactId>
+          <version>6.6.1.Final</version>
       </dependency>
+
 
 <!--      others-->
       <dependency>
@@ -108,11 +104,11 @@
           <artifactId>postgresql</artifactId>
           <version>42.7.4</version>
       </dependency>
-      <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-dbcp2</artifactId>
-          <version>2.12.0</version>
-      </dependency>
+<!--      <dependency>-->
+<!--          <groupId>org.apache.commons</groupId>-->
+<!--          <artifactId>commons-dbcp2</artifactId>-->
+<!--          <version>2.12.0</version>-->
+<!--      </dependency>-->
       <dependency>
           <groupId>org.projectlombok</groupId>
           <artifactId>lombok</artifactId>

@@ -11,34 +11,27 @@
         http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <context:component-scan base-package="com.example.ticketServicePayara"/>
-    <context:component-scan base-package="com.example.ticketServicePayara.model"/>
 
     <mvc:annotation-driven/>
 
-    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
-        <property name="driverClassName" value="org.postgresql.Driver"/>
-        <property name="url" value="jdbc:postgresql://localhost:5433/soa"/>
-        <property name="username" value="postgres"/>
-        <property name="password" value="postgres"/>
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="soa"/>
+        <property name="resourceRef" value="true"/>
+        <property name="lookupOnStartup" value="false"/>
+        <property name="cache" value="true"/>
+        <property name="proxyInterface" value="javax.sql.DataSource"/>
     </bean>
-
+    <!-- Настройка EntityManagerFactory -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <property name="packagesToScan" value="com.example.ticketServicePayara.model"/>
+        <property name="persistenceUnitName" value="myPersistenceUnit"/>
         <property name="jpaVendorAdapter">
-            <bean class="org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter"/>
-        </property>
-        <property name="jpaProperties">
-            <props>
-                <prop key="jakarta.persistence.schema-generation.database.action">update</prop>
-                <prop key="eclipselink.logging.level">FINE</prop>
-            </props>
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="databasePlatform" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            </bean>
         </property>
     </bean>
 
-    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-        <property name="entityManagerFactory" ref="entityManagerFactory"/>
-    </bean>
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"/>
 
-    <tx:annotation-driven transaction-manager="transactionManager"/>
 </beans>
