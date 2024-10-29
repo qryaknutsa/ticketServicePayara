@@ -50,7 +50,7 @@ public class Person implements Serializable {
 
     @NotNull
     @Valid
-    @ManyToOne // more than one people per location
+    @ManyToOne(cascade = CascadeType.PERSIST) // more than one people per location
     @JoinColumn(name = "location", nullable = false)
     private Location location;
 

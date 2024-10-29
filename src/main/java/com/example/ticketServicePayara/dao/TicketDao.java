@@ -34,7 +34,9 @@ public class TicketDao {
     @Transactional
     public Ticket save(Ticket entity){
         coordinatesDao.save(entity.getCoordinates());
-        personDao.save(entity.getPerson());
+        if(entity.getPerson()!=null)
+            personDao.save(entity.getPerson());
+
         entityManager.persist(entity);
         return entity;
     }

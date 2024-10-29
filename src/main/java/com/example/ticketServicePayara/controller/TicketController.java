@@ -1,7 +1,6 @@
 package com.example.ticketServicePayara.controller;
 
 import com.example.ticketServicePayara.dao.TicketDao;
-import com.example.ticketServicePayara.enums.TicketType;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +22,11 @@ public class TicketController {
     @Autowired
     private TicketDao ticketService;
 
-    @GetMapping
+
+    @GetMapping(produces = "application/json")
     public ResponseEntity<?> getAllTickets() {
         List<Ticket> list = ticketService.getAll();
-        return ResponseEntity.status(200).body(list);
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping
@@ -35,7 +35,6 @@ public class TicketController {
         ticketService.save(ticket);
         return ResponseEntity.status(201).body(ticket);
     }
-
 
 
     @GetMapping(value = "{id}")

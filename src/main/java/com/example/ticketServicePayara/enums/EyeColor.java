@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public enum EyeColor {
-    GREEN("green"),
-    RED("red"),
-    BLUE("blue");
+    GREEN("GREEN"),
+    RED("RED"),
+    BLUE("BLUE");
 
     private final String value;
 

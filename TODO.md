@@ -1,0 +1,5 @@
+- [ ] filter fields in update
+- [ ] pagination, sorting, filter
+- [ ] return ErrorResponse or ErrorResponseArray
+- [ ] 500, 404, 400, etc errors 
+- [ ] validation of enums
