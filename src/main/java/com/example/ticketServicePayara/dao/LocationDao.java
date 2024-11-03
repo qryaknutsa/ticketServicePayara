@@ -37,7 +37,7 @@ public class LocationDao {
                     location.setX((int) value);
                     break;
                 case "y":
-                    location.setY((double) value);
+                    location.setY((long) value);
                     break;
                 case "z":
                     location.setZ((double) value);

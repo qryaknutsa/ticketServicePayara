@@ -8,7 +8,6 @@ import lombok.*;
 import java.io.Serializable;
 
 
-
 @Entity
 @Table(name = "location")
 @Getter
@@ -20,32 +19,30 @@ public class Location implements Serializable {
     private int id;
 
     @NotNull
-    @Min(value = -99999, message = "Значение должно быть больше -1000000")
-    @Max(value = 99999, message = "Значение должно быть меньше 1000000")
-    @Column(name = "x", nullable = false)
-    private int x;
+    @Min(value = -2147483648, message = "Значение не может быть меньше возможного -2147483648")
+    @Max(value = 2147483647, message = "Значение не может быть больше возможного 2147483647")
+    @Column(nullable = false)
+    private Integer x;
 
-    @Min(value = -99999, message = "Значение должно быть больше -1000000")
-    @Max(value = 99999, message = "Значение должно быть меньше -1000000")
+    @DecimalMin(value = "-9223372036854775808", message = "Значение не может быть меньше возможного -9223372036854775808")
+    @DecimalMax(value = "9223372036854775807", message = "Значение не может быть больше возможного 9223372036854775807")
+    @Column
+    private long y = 0;
+
+    @DecimalMin(value = "4.9E-324", message = "Значение не может быть меньше возможного 4.9E-324")
+    @DecimalMax(value = "1.7976931348623157E308", message = "Значение не может быть больше возможного 1.7976931348623157E308")
     @ValidFraction(fraction = 6, message = "Значение должно иметь не более 6 знаков после запятой.")
-    @Column(name = "y")
-    private double y;
+    @Column(nullable = false)
+    private double z = 0;
 
-    @NotNull
-    @Min(value = -99999, message = "Значение должно быть больше -1000000")
-    @Max(value = 99999, message = "Значение должно быть меньше -1000000")
-    @ValidFraction(fraction = 6, message = "Значение должно иметь не более 6 знаков после запятой.")
-    @Column(name = "z", nullable = false)
-    private double z;
-
-    @Size(max = 100, message = "Значение должно быть до 100 символов")
-    @Column(name = "name")
+    @Size(message = "Значение должно быть до 2147483647 символов")
+    @Column
     private String name;
 
     public Location() {
     }
 
-    public Location(int x, double y, double z, String name) {
+    public Location(int x, Integer y, double z, String name) {
         this.x = x;
         this.y = y;
         this.z = z;

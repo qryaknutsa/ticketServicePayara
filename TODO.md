@@ -3,3 +3,6 @@
 - [ ] return ErrorResponse or ErrorResponseArray
 - [ ] 500, 404, 400, etc errors 
 - [ ] validation of enums
+- [ ] добавить округление значений с точкой
+- [x] изменить валидацию на максимальные значения
+- [x] поменять Event под создание нескольких билетов

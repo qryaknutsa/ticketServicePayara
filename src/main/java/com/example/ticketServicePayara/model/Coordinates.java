@@ -2,9 +2,7 @@ package com.example.ticketServicePayara.model;
 
 import com.example.ticketServicePayara.validation.ValidFraction;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -14,21 +12,20 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class Coordinates implements Serializable {
-
     @Id
-    @Column(name = "id", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "x")
-    @Min(value = -90, message = "Значение не может быть меньше -90 градусов.")
-    @Max(value = 90, message = "Значение не может быть больше 90 градусов.")
+    @Column
+    @DecimalMin(value = "1.4E-45", message = "Значение не может быть меньше возможного 1.4E-45.")
+    @DecimalMax(value = "3.4028235E38", message = "Значение не может быть больше возможного 3.4028235E38.")
     @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
-    private float x;
+    private float x = 0;
 
-    @Column(name = "y", nullable = false)
-    @Min(value = -180, message = "Значение не может быть меньше -180 градусов.")
-    @Max(value = 180, message = "Значение не может быть больше 180 градусов.")
+    @Column(nullable = false)
+    @DecimalMin(value = "1.4E-45", message = "Значение не может быть меньше возможного 1.4E-45.")
+    @DecimalMax(value = "3.4028235E38", message = "Значение не может быть больше возможного 3.4028235E38.")
     @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     @NotNull
     private Float y;

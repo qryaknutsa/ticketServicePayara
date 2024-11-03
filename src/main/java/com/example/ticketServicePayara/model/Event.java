@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +25,14 @@ public class Event implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @ManyToOne(cascade = CascadeType.MERGE) // more than one ticket to one pair of coordinates
+    @JoinColumn(name = "coordinates", nullable = false)
+    private Coordinates coordinates;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @Column(name = "price", nullable = false)
+    private int price;
+
+    @OneToMany
     @JoinTable(
             name = "event_ticket",  // Имя таблицы-соединителя
             joinColumns = @JoinColumn(name = "event_id"),  // Колонка для связи с Event

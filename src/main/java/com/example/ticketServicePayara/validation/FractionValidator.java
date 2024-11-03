@@ -3,7 +3,10 @@ package com.example.ticketServicePayara.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class FractionValidator implements ConstraintValidator<ValidFraction, Number> {
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public class FractionValidator implements ConstraintValidator<ValidFraction, Object> {
     private int fraction;
 
     @Override
@@ -12,19 +15,25 @@ public class FractionValidator implements ConstraintValidator<ValidFraction, Num
     }
 
     @Override
-    public boolean isValid(Number value, ConstraintValidatorContext context) {
-        if (value == null) {
-            return true; // Или используйте @NotNull для проверки на null
+    public boolean isValid(Object value, ConstraintValidatorContext context) {
+        if (value == null) return true;  // Допускаем null
+
+        BigDecimal decimalValue;
+
+        // Преобразование значения в BigDecimal в зависимости от его типа
+        if (value instanceof BigDecimal) {
+            decimalValue = (BigDecimal) value;
+        } else if (value instanceof Double || value instanceof Float) {
+            decimalValue = BigDecimal.valueOf(((Number) value).doubleValue());
+        } else if (value instanceof Integer || value instanceof Long || value instanceof Short || value instanceof Byte) {
+            decimalValue = BigDecimal.valueOf(((Number) value).longValue());
+        } else {
+            return false;  // Если тип не поддерживается, возвращаем false
         }
 
-        // Преобразуем число в строку
-
-        String numberStr = String.valueOf(value);
-        if (numberStr.contains(".")) {
-            String[] parts = numberStr.split("\\.");
-            return parts[1].length() <= fraction; // Проверяем количество знаков после запятой
-        }
-        return true; // Если нет дробной части, то значение корректно
+        // Округление и сравнение с исходным значением
+        BigDecimal roundedValue = decimalValue.setScale(fraction, RoundingMode.HALF_UP);
+        return roundedValue.compareTo(decimalValue) == 0;
     }
 }
 
