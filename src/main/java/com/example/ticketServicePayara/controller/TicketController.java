@@ -23,11 +23,12 @@ public class TicketController {
     private TicketDao ticketService;
 
 
-    @GetMapping(produces = "application/json")
-    public ResponseEntity<?> getAllTickets() {
-        List<Ticket> list = ticketService.getAll();
+    @GetMapping
+    public ResponseEntity<?> getAllTickets(@RequestParam(required = false) Integer size, @RequestParam(required = false) Integer page, @RequestParam(required = false) String sort, @RequestParam(required = false) String filter) {
+        List<Ticket> list = ticketService.getAllFilteredSortedPaginated(size, page, sort, filter);
         return ResponseEntity.ok(list);
     }
+
 
     @PostMapping
     @Transactional
@@ -43,42 +44,33 @@ public class TicketController {
     }
 
     @PatchMapping(value = "{id}")
-    public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody Map<String, Object> updates)  {
+    public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody Map<String, Object> updates) {
         ticketService.update(id, updates);
         return ResponseEntity.status(200).body(id);
     }
 
     @DeleteMapping(value = "{id}")
-    public ResponseEntity<?> deleteTicketById(@PathVariable int id)  {
+    public ResponseEntity<?> deleteTicketById(@PathVariable int id) {
         ticketService.deleteById(id);
         return ResponseEntity.status(204).body(id);
     }
 
     @GetMapping(value = "discounts")
     public ResponseEntity<?> getDiscounts() {
-        try {
-            return ResponseEntity.status(200).body(ticketService.discountSum());
-        } catch (RuntimeException e){
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+        return ResponseEntity.status(200).body(ticketService.discountSum());
     }
 
     @GetMapping(value = "types/less/{type}")
     public ResponseEntity<?> getLessTypes(@PathVariable String type) {
-        try {
-            return ResponseEntity.status(200).body(ticketService.getAmountLessThanType(type));
-        } catch (RuntimeException e){
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+        return ResponseEntity.status(200).body(ticketService.getAmountLessThanType(type));
     }
 
     @GetMapping(value = "types/unique")
     public ResponseEntity<?> getUniqueTypes() {
-        try {
-            return ResponseEntity.status(200).body(ticketService.getUniqueTypes());
-        } catch (RuntimeException e){
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+        return ResponseEntity.status(200).body(ticketService.getUniqueTypes());
+
     }
+
+
 }
 

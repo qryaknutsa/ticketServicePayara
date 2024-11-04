@@ -1,4 +1,4 @@
-package com.example.ticketServicePayara.exception;
+package com.example.ticketServicePayara.exception.tools;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

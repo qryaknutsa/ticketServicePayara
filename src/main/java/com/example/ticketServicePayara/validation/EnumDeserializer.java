@@ -1,4 +1,4 @@
-//package com.example.ticketServicePayara.validation;
+//package com.example.ticketServicePayara.validator;
 //
 //import com.example.ticketServicePayara.exception.InvalidEnumValueException;
 //import com.fasterxml.jackson.core.JsonParser;

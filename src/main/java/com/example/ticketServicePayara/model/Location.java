@@ -1,6 +1,7 @@
 package com.example.ticketServicePayara.model;
 
-import com.example.ticketServicePayara.validation.ValidFraction;
+import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
+import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -18,7 +19,7 @@ public class Location implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotNull
+    @CustomNotNull
     @Min(value = -2147483648, message = "Значение не может быть меньше возможного -2147483648")
     @Max(value = 2147483647, message = "Значение не может быть больше возможного 2147483647")
     @Column(nullable = false)
@@ -29,11 +30,12 @@ public class Location implements Serializable {
     @Column
     private long y = 0;
 
+    @CustomNotNull
     @DecimalMin(value = "4.9E-324", message = "Значение не может быть меньше возможного 4.9E-324")
     @DecimalMax(value = "1.7976931348623157E308", message = "Значение не может быть больше возможного 1.7976931348623157E308")
     @ValidFraction(fraction = 6, message = "Значение должно иметь не более 6 знаков после запятой.")
     @Column(nullable = false)
-    private double z = 0;
+    private Double z;
 
     @Size(message = "Значение должно быть до 2147483647 символов")
     @Column

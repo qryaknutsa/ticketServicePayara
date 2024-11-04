@@ -1,5 +1,6 @@
-package com.example.ticketServicePayara.validation;
+package com.example.ticketServicePayara.validation.validator;
 
+import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

@@ -4,7 +4,7 @@ package com.example.ticketServicePayara.model;
 import com.example.ticketServicePayara.enums.Country;
 import com.example.ticketServicePayara.enums.EyeColor;
 import com.example.ticketServicePayara.enums.HairColor;
-import com.example.ticketServicePayara.validation.ValidEnum;
+import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -24,17 +24,17 @@ public class Person implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @CustomNotNull
     @Min(value = 50, message = "Значение должно быть больше 50")
     @Max(value = 300, message = "Значение должно быть меньше 300")
-    @NotNull
     @Column(nullable = false)
-    private int height;
+    private Integer height;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "eyeColor")
     private EyeColor eyeColor;
 
-    @NotNull
+    @CustomNotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "hairColor", nullable = false)
     private HairColor hairColor;
@@ -43,7 +43,7 @@ public class Person implements Serializable {
     @Column
     private Country nationality;
 
-    @NotNull
+    @CustomNotNull
     @Valid
     @ManyToOne(cascade = CascadeType.PERSIST) // more than one people per location
     @JoinColumn(name="location",nullable = false)
