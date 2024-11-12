@@ -164,7 +164,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getMessage(), getFullURL(request));
+        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getCause().getLocalizedMessage(), getFullURL(request));
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

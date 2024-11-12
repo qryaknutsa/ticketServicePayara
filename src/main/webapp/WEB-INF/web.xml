@@ -8,6 +8,16 @@
 
   <absolute-ordering/>
 
+  <filter>
+    <filter-name>CORSFilter</filter-name>
+    <filter-class>com.example.ticketServicePayara.cors.CORSFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>CORSFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+
   <servlet>
     <servlet-name>dispatcher</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>

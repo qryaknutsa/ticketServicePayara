@@ -110,20 +110,21 @@ public class TicketDao {
 
     @Transactional
     public void deleteById(int id) {
-        Ticket location = getById(id);
-        if (location != null) {
-            entityManager.remove(location);
-        }
+        Ticket ticket = getById(id);
+        delete(ticket);
     }
+
+
 
     @Transactional
     public void delete(Ticket entity) {
         entityManager.remove(entity);
     }
 
-
-//    @Query("SELECT DISTINCT t.type FROM Ticket t")
-//    List<Ticket.TicketType> findDistinctTicketTypes();
+    @Transactional
+    public void deleteByIds(List<Integer> ids) {
+        for(int id : ids) deleteById(id);
+    }
 
     // Доп операции
     public double discountSum() {

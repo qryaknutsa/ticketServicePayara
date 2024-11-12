@@ -17,6 +17,7 @@ import java.util.Map;
 @RequestMapping(value = "TMA/api/v2/tickets")
 @EnableTransactionManagement
 @Validated
+@CrossOrigin(origins = "*")
 public class TicketController {
 
     @Autowired
@@ -54,6 +55,14 @@ public class TicketController {
         ticketService.deleteById(id);
         return ResponseEntity.status(204).body(id);
     }
+
+    @PostMapping(value = "/bulk-delete")
+    public ResponseEntity<?> deleteTicketsByIds(@RequestBody List<Integer> ids) {
+        ticketService.deleteByIds(ids);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
     @GetMapping(value = "discounts")
     public ResponseEntity<?> getDiscounts() {
