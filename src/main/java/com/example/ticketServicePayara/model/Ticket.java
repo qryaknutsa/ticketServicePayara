@@ -7,16 +7,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 
-@Setter
-@Getter
+@Data
 @Entity
 @Table(name = "ticket")
 public class Ticket implements Serializable {
@@ -26,7 +24,7 @@ public class Ticket implements Serializable {
     private int id;
 
     @CustomNotNull
-    @Size(min = 1, message = "Значение должно быть от 1 до 2147483647 символов")
+    @Size(min = 1, message = "Значение не должно быть пустым.")
     @Column(nullable = false)
     private String name;
 
@@ -48,8 +46,8 @@ public class Ticket implements Serializable {
 
     //TODO: попроавить Swagger - required
     @CustomNotNull
-    @DecimalMin(value = "4.9E-324", message = "Значение не может быть меньше возможного 4.9E-324")
-    @DecimalMax(value = "1.7976931348623157E308", message = "Значение не может быть больше возможного 1.7976931348623157E308")
+    @DecimalMin(value = "0", message = "Значение не может быть меньше возможного 0")
+    @DecimalMax(value = "100", message = "Значение не может быть больше возможного 100")
     @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     @Column(nullable = false)
     private Double discount;

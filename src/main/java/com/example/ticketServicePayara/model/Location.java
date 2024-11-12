@@ -31,8 +31,8 @@ public class Location implements Serializable {
     private long y = 0;
 
     @CustomNotNull
-    @DecimalMin(value = "4.9E-324", message = "Значение не может быть меньше возможного 4.9E-324")
-    @DecimalMax(value = "1.7976931348623157E308", message = "Значение не может быть больше возможного 1.7976931348623157E308")
+    @DecimalMin(value = "-1.79769313348623157E308", message = "Значение не может быть меньше возможного -1.79769313348623157E308")
+    @DecimalMax(value = "1.79769313348623157E308", message = "Значение не может быть больше возможного 1.79769313348623157E308")
     @ValidFraction(fraction = 6, message = "Значение должно иметь не более 6 знаков после запятой.")
     @Column(nullable = false)
     private Double z;

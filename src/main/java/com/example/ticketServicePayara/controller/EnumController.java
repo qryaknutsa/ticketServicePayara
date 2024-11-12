@@ -44,7 +44,7 @@ public class EnumController {
     @GetMapping("ticket-types")
     public List<String> getTicketTypes() {
         return Arrays.stream(TicketType.values())
-                .map(TicketType::getValue)
+                .map(TicketType::getType)
                 .collect(Collectors.toList());
     }
 }

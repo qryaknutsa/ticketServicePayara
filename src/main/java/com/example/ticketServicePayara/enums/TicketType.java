@@ -25,7 +25,7 @@ public enum TicketType {
     }
 
     @JsonValue
-    public String getValue() {
+    public String getType() {
         return value;
     }
 

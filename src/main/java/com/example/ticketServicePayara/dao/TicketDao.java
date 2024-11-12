@@ -13,10 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -40,14 +37,14 @@ public class TicketDao {
         else page--;
 
         List<Ticket> list = getAll();
-        filterTickets(filter, list);
-        sortTickets(sort, list);
+        List<Ticket> filteredList = filterTickets(filter, list);
+        List<Ticket> sortedList  = sortTickets(sort, filteredList);
 
 
-        int fromIndex = Math.min(size * page, list.size());
-        int toIndex = Math.min(fromIndex + size, list.size());
-        List<Ticket> paginatedList = list.subList(fromIndex, toIndex);
-        if (list.isEmpty())
+        int fromIndex = Math.min(size * page, sortedList.size());
+        int toIndex = Math.min(fromIndex + size, sortedList.size());
+        List<Ticket> paginatedList = sortedList.subList(fromIndex, toIndex);
+        if (paginatedList.isEmpty())
             throw new TicketNotFoundException();
         return paginatedList;
     }
@@ -140,12 +137,17 @@ public class TicketDao {
     }
 
     public Set<String> getUniqueTypes() {
-        return getAll().stream()
-                .map(ticket -> ticket.getType().name())
-                .collect(Collectors.toSet());
+        Set<String> types = new HashSet<>();
+        List<Ticket> list = getAll();
+        for(Ticket ticket : list){
+            if(ticket.getType() != null){
+                types.add(ticket.getType().getType());
+            }
+        }
+        return types;
     }
 
-    private void sortTickets(String sort, List<Ticket> list) {
+    private List<Ticket> sortTickets(String sort, List<Ticket> list) {
         if (sort != null && !sort.isEmpty()) {
             Comparator<Ticket> comparator = null;
 
@@ -160,12 +162,13 @@ public class TicketDao {
             }
 
             if (comparator != null) {
-                list = list.stream().sorted(comparator).toList();
+                return list.stream().sorted(comparator).toList();
             }
         } else {
             Comparator<Ticket> fieldComparator = createComparator("id", "asc");
-            list = list.stream().sorted(fieldComparator).toList();
+            return list.stream().sorted(fieldComparator).toList();
         }
+        return list;
     }
 
     private Comparator<Ticket> createComparator(String field, String method) {
@@ -189,7 +192,7 @@ public class TicketDao {
     }
 
 
-    private void filterTickets(String filter, List<Ticket> list) {
+    private List<Ticket> filterTickets(String filter, List<Ticket> list) {
         if (filter != null && !filter.isEmpty()) {
             String[] conditions = filter.split(",");
             for (String condition : conditions) {
@@ -218,7 +221,9 @@ public class TicketDao {
                     throw new NoFilterMethodException(condition);
                 }
             }
+
         }
+        return list;
     }
 
 
