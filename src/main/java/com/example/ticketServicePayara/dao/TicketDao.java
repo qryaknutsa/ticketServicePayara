@@ -3,6 +3,7 @@ package com.example.ticketServicePayara.dao;
 
 import com.example.ticketServicePayara.enums.TicketType;
 import com.example.ticketServicePayara.exception.*;
+import com.example.ticketServicePayara.model.Coordinates;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -38,7 +39,7 @@ public class TicketDao {
 
         List<Ticket> list = getAll();
         List<Ticket> filteredList = filterTickets(filter, list);
-        List<Ticket> sortedList  = sortTickets(sort, filteredList);
+        List<Ticket> sortedList = sortTickets(sort, filteredList);
 
 
         int fromIndex = Math.min(size * page, sortedList.size());
@@ -112,7 +113,6 @@ public class TicketDao {
     }
 
 
-
     @Transactional
     public void delete(Ticket entity) {
         entityManager.remove(entity);
@@ -120,7 +120,7 @@ public class TicketDao {
 
     @Transactional
     public void deleteByIds(List<Integer> ids) {
-        for(int id : ids) deleteById(id);
+        for (int id : ids) deleteById(id);
     }
 
     // Доп операции
@@ -139,8 +139,8 @@ public class TicketDao {
     public Set<String> getUniqueTypes() {
         Set<String> types = new HashSet<>();
         List<Ticket> list = getAll();
-        for(Ticket ticket : list){
-            if(ticket.getType() != null){
+        for (Ticket ticket : list) {
+            if (ticket.getType() != null) {
                 types.add(ticket.getType().getType());
             }
         }
@@ -230,32 +230,53 @@ public class TicketDao {
     private List<Ticket> applyFilter(List<Ticket> tickets, String field, String operator, String value) {
         return tickets.stream().filter(ticket -> {
             try {
-                Field f = Ticket.class.getDeclaredField(field);
-                f.setAccessible(true);
-                Object fieldValue = f.get(ticket);
-
-                switch (operator) {
-                    case "=":
-                        return fieldValue != null && fieldValue.toString().equals(value);
-                    case "!=":
-                        return fieldValue == null || !fieldValue.toString().equals(value);
-                    case ">":
-                        return fieldValue != null && ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0;
-                    case "<":
-                        return fieldValue != null && ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0;
-                    case ">=":
-                        return fieldValue != null && ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0;
-                    case "<=":
-                        return fieldValue != null && ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0;
-                    case "contains":
-                        return fieldValue != null && fieldValue.toString().contains(value);
-                    default:
-                        throw new NoFilterMethodException(operator);
+                Object fieldValue;
+                Field f;
+                String[] fieldParts = field.split("\\.");
+                if (fieldParts.length > 1) {
+                    Object[] values = getNestedFieldValue(ticket, fieldParts);
+                    fieldValue = values[0];
+                    f = (Field) values[1];
+                } else {
+                    // Обработка простых полей
+                    f = Ticket.class.getDeclaredField(field);
+                    f.setAccessible(true);
+                    fieldValue = f.get(ticket);
                 }
+
+                if (fieldValue == null && !("=").equals(operator)) {
+                    return false;
+                }
+
+                return switch (operator) {
+                    case "=" -> fieldValue != null && fieldValue.toString().equals(value);
+                    case "!=" -> !fieldValue.toString().equals(value);
+                    case ">" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0;
+                    case "<" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0;
+                    case ">=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0;
+                    case "<=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0;
+                    case "contains" -> fieldValue.toString().contains(value);
+                    default -> throw new NoFilterMethodException(operator);
+                };
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new NoFieldException(field);
             }
-        }).toList();
+        }).collect(Collectors.toList());
+    }
+
+    private Object[] getNestedFieldValue(Ticket ticket, String[] fieldParts) throws NoSuchFieldException, IllegalAccessException {
+        Object currentObject = ticket;
+        for (int i = 0; i < fieldParts.length - 1; i++) {
+            Field field = currentObject.getClass().getDeclaredField(fieldParts[i]);
+            field.setAccessible(true);
+            currentObject = field.get(currentObject);
+            if (currentObject == null) {
+                return null;
+            }
+        }
+        Field finalField = currentObject.getClass().getDeclaredField(fieldParts[fieldParts.length - 1]);
+        finalField.setAccessible(true);
+        return new Object[]{finalField.get(currentObject), finalField};
     }
 
     private Object parseValue(String value, Class<?> targetType) {
@@ -273,4 +294,5 @@ public class TicketDao {
             return value;
         }
     }
+
 }
