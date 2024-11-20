@@ -1,6 +1,8 @@
 package com.example.ticketServicePayara.controller;
 
+import com.example.ticketServicePayara.converter.TicketConverter;
 import com.example.ticketServicePayara.dao.TicketDao;
+import com.example.ticketServicePayara.dto.TicketWrite;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +35,9 @@ public class TicketController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<?> saveTicket(@Valid @RequestBody Ticket ticket) {
-        ticketService.save(ticket);
-        return ResponseEntity.status(201).body(ticket);
+    public ResponseEntity<?> saveTicket(@Valid @RequestBody TicketWrite ticket) {
+        Ticket t = ticketService.save(TicketConverter.toTicket(ticket));
+        return ResponseEntity.status(201).body(t);
     }
 
 
@@ -55,13 +57,6 @@ public class TicketController {
         ticketService.deleteById(id);
         return ResponseEntity.status(204).body(id);
     }
-
-    @PostMapping(value = "/bulk-delete")
-    public ResponseEntity<?> deleteTicketsByIds(@RequestBody List<Integer> ids) {
-        ticketService.deleteByIds(ids);
-        return ResponseEntity.noContent().build();
-    }
-
 
 
     @GetMapping(value = "discounts")

@@ -40,7 +40,8 @@ public class Event implements Serializable {
     private ZonedDateTime endTime;
 
 
-    @ManyToOne(cascade = CascadeType.PERSIST)  // more than one ticket to one pair of coordinates
+//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "coordinates", nullable = false)
     private Coordinates coordinates;
 
@@ -51,7 +52,7 @@ public class Event implements Serializable {
     @JsonProperty("discount")
     private Double discount;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinTable(
             name = "event_ticket",  // Имя таблицы-соединителя
             joinColumns = @JoinColumn(name = "event_id"),  // Колонка для связи с Event
@@ -61,5 +62,15 @@ public class Event implements Serializable {
     private List<Ticket> tickets = new ArrayList<>();
 
     public Event() {
+    }
+
+    public Event(String title, String description, ZonedDateTime startTime, ZonedDateTime endTime, Coordinates coordinates, Integer price, Double discount) {
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.coordinates = coordinates;
+        this.price = price;
+        this.discount = discount;
     }
 }

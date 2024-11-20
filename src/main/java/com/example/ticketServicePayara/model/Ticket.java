@@ -30,7 +30,8 @@ public class Ticket implements Serializable {
 
     @CustomNotNull
     @Valid
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "coordinates", nullable = false)
     private Coordinates coordinates;
 
@@ -60,7 +61,8 @@ public class Ticket implements Serializable {
     private TicketType type;
 
     @Valid
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+//    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "person")
     private Person person;
 

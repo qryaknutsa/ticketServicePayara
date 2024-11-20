@@ -3,15 +3,12 @@ package com.example.ticketServicePayara.dao;
 
 import com.example.ticketServicePayara.enums.TicketType;
 import com.example.ticketServicePayara.exception.*;
-import com.example.ticketServicePayara.model.Coordinates;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -66,10 +63,13 @@ public class TicketDao {
         coordinatesDao.save(entity.getCoordinates());
         if (entity.getPerson() != null)
             personDao.save(entity.getPerson());
-
         entityManager.persist(entity);
         return entity;
     }
+
+
+
+
 
     @Transactional
     public void update(int id, Map<String, Object> updates) {
@@ -118,12 +118,6 @@ public class TicketDao {
         entityManager.remove(entity);
     }
 
-    @Transactional
-    public void deleteByIds(List<Integer> ids) {
-        for (int id : ids) deleteById(id);
-    }
-
-    // Доп операции
     public double discountSum() {
         return getAll().stream()
                 .mapToDouble(Ticket::getDiscount)
