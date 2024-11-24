@@ -3,7 +3,7 @@ package com.example.ticketServicePayara.converter;
 import com.example.ticketServicePayara.dto.LocationWrite;
 import com.example.ticketServicePayara.model.Location;
 
-public class LocationConverter {
+public class LocationWriteConverter {
 
     public static Location toLocation(LocationWrite locationWrite) {
         Location location = new Location();

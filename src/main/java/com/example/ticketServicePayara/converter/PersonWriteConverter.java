@@ -6,7 +6,7 @@ import com.example.ticketServicePayara.enums.EyeColor;
 import com.example.ticketServicePayara.enums.HairColor;
 import com.example.ticketServicePayara.model.Person;
 
-public class PersonConverter {
+public class PersonWriteConverter {
 
     public static Person toPerson(PersonWrite personWrite){
         Person person = new Person();
@@ -14,7 +14,7 @@ public class PersonConverter {
         person.setHeight(personWrite.getHeight());
         if(personWrite.getNationality() != null) person.setNationality(Country.valueOf(personWrite.getNationality()));
         person.setHairColor(HairColor.valueOf(personWrite.getHairColor()));
-        person.setLocation(LocationConverter.toLocation(personWrite.getLocation()));
+        person.setLocation(LocationWriteConverter.toLocation(personWrite.getLocation()));
         return person;
     }
 
@@ -25,7 +25,7 @@ public class PersonConverter {
         personWrite.setHeight(person.getHeight());
         if(person.getNationality() != null) personWrite.setNationality(person.getNationality().name());
         personWrite.setHairColor(person.getHairColor().name());
-        personWrite.setLocation(LocationConverter.toLocationWrite(person.getLocation()));
+        personWrite.setLocation(LocationWriteConverter.toLocationWrite(person.getLocation()));
         return personWrite;
     }
 }

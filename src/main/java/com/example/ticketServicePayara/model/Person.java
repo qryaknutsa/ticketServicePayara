@@ -45,7 +45,7 @@ public class Person implements Serializable {
 
     @CustomNotNull
     @Valid
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 //    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name="location",nullable = false)
     private Location location;

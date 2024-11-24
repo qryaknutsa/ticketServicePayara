@@ -3,10 +3,10 @@
 
 
 ## Big tasks
-- [ ] Depoly on helios
+- [x] Depoly on helios
   - [x] запуск payara
   - [x] db connection
-  - [ ] final deploy
+  - [x] final deploy
 - [ ] Frontend
 
 
@@ -15,7 +15,7 @@
 - [x] return ErrorResponse or ErrorResponseArray
 - [x] 500, 404, 400, etc errors
 - [x] difference between 400 nd 422
-- [ ] validation of enums
+- [x] validation of enums - проверка всех string
 - [ ] добавить округление значений с точкой
 - [x] изменить валидацию на максимальные значения
 - [x] поменять Event под создание нескольких билетов
@@ -23,14 +23,26 @@
 
 
 ## GET /enums
-- [ ] проверить
+- [x] проверить
 
 ## GET /tickets
 - [ ] проверить, что ошибка неверного способа фильтрации не путается с ошибкой неправильного поля
 - [x] не работает фильтрация для полей объектов, говорит что такого поля нет (coordinates.x)
-- [ ] не работает фильтрация на '='
-- [ ] для значений с плавающей точкой нужно при фильтрации добавлять '.' (не 'discount=43', а 'discount=43.0')
-- [ ] contains не работает...........
+- [ ] не работает фильтрация на = и != для чисел
+- [ ] contains не работает
+- [ ] фильтрация String значений не работает
+- [ ] фильтрация creationDate значений не работает
+- [ ] refundable не работает на null
+
+
+## Тестирование
+- [ ] "discount": "43ю23". Может конвертировать числа в виде строки, но если строка не конвертируется в число - ошибка 400, но не моя
+- [x] строка name не влезает в бд, надо поменять бд
+- [ ] price = 2147483647, не срабатывает MAX_VALUE. Надо обработать Numeric value (2147483648) out of range of int (-2147483648 - 2147483647)
+- [ ] http://localhost:8090/ticketservicepayara/TMA/api/v2/tickets?filter=person.height=123 - jakarta.servlet.ServletException: Request processing failed: java.lang.NullPointerException: Cannot load from object array because "values" is null
+- [ ] в delete сделать проверку, что можно удалить
+- [ ] убрать ограничение на количество знаков после запятой
+- [ ] нет сортировки внутри объектов
 
 ## POST /tickets
 - [x] Поменять @NotNull кидать 400 статус
@@ -41,10 +53,10 @@
 - [x] 404 если не найден
 
 ## PATCH /tickets/{id} 
-- [ ] проверка id корректен
-- [ ] проверка id валиден, 
-- [ ] 404 если не найден
-- [ ] filter fields in update
+- [x] проверка id корректен
+- [x] проверка id валиден, 
+- [x] 404 если не найден
+- [x] filter fields in update
 
 
 ## DELETE /tickets/{id}

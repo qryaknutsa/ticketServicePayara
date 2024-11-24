@@ -3,7 +3,7 @@ package com.example.ticketServicePayara.converter;
 import com.example.ticketServicePayara.dto.CoordinatesWrite;
 import com.example.ticketServicePayara.model.Coordinates;
 
-public class CoordinatesConverter {
+public class CoordinatesWriteConverter {
     public static Coordinates toCoordinates(CoordinatesWrite coordinatesWrite) {
         Coordinates coordinates = new Coordinates();
         coordinates.setX(coordinatesWrite.getX());

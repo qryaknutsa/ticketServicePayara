@@ -81,9 +81,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Object[] args = new Object[]{ex.getPropertyName(), ex.getValue()};
-        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Не получилось конвертировать " + args[0] + " с значением: " + args[1], getFullURL(request));
+        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Не получилось конвертировать " + args[0] + " с значением: " + args[1], getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
+
+
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
@@ -110,10 +112,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponseArray errorResponseArray;
         if (!customNotNullErrors.isEmpty())
             errorResponseArray =
-                    new ErrorResponseArray(BAD_REQUEST, customNotNullErrors, getFullURL(request));
+                    new ErrorResponseArray(BAD_REQUEST, customNotNullErrors, getFullURL());
         else
             errorResponseArray =
-                    new ErrorResponseArray(UNPROCESSABLE_ENTITY, errors, getFullURL(request));
+                    new ErrorResponseArray(UNPROCESSABLE_ENTITY, errors, getFullURL());
 
         return this.handleExceptionInternal(ex, errorResponseArray, headers, status, request);
     }
@@ -123,54 +125,51 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     //TODO: для refundable надо уточнить какое поле не читается
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        System.out.println(ex.getHttpInputMessage());
-        System.out.println(ex.getLocalizedMessage());
-        System.out.println(ex.getMostSpecificCause().getLocalizedMessage());
         ProblemDetail body = this.createProblemDetail(ex, status, ex.getCause().getLocalizedMessage(), (String) null, (Object[]) null, request);
         return this.handleExceptionInternal(ex, body, headers, status, request);
     }
 
     @ExceptionHandler(InvalidParameterException.class)
-    public ResponseEntity<Object> handleInvalidParameterException(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(UNPROCESSABLE_ENTITY, ex.getMessage(), getFullURL(request));
+    public ResponseEntity<Object> handleInvalidParameterException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(UNPROCESSABLE_ENTITY, ex.getMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(NoFieldException.class)
-    public ResponseEntity<Object> handleNoFieldException(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Поля " + ex.getMessage() + " нет.", getFullURL(request));
+    public ResponseEntity<Object> handleNoFieldException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Поля " + ex.getMessage() + " нет.", getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
 
 
     @ExceptionHandler(NoFilterMethodException.class)
-    public ResponseEntity<Object> handleNoFilterMethodException(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Неверное условие фильтрации: " + ex.getMessage(), getFullURL(request));
+    public ResponseEntity<Object> handleNoFilterMethodException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Неверное условие фильтрации: " + ex.getMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoSortMethodException.class)
-    public ResponseEntity<Object> handleNoSortMethodException(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Метода сортировки " + ex.getMessage() + " нет.", getFullURL(request));
+    public ResponseEntity<Object> handleNoSortMethodException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Метода сортировки " + ex.getMessage() + " нет.", getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TicketNotFoundException.class)
-    public ResponseEntity<Object> handleTicketNotFoundException(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(NOT_FOUND, "По вашему запросу билеты не найдены.", getFullURL(request));
+    public ResponseEntity<Object> handleTicketNotFoundException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(NOT_FOUND, ex.getMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getCause().getLocalizedMessage(), getFullURL(request));
+    public ResponseEntity<Object> handleAllExceptions(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getCause().getLocalizedMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
-    public String getFullURL(WebRequest request) {
-        HttpServletRequest servletRequest = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+    public String getFullURL() {
+        HttpServletRequest servletRequest = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
 
         StringBuilder url;
         url = new StringBuilder(servletRequest.getRequestURL().toString());

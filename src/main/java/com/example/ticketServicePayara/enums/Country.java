@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.List;
+
 public enum Country {
     NORTH_KOREA("NORTH_KOREA"),
     JAPAN("JAPAN"),
@@ -19,6 +21,7 @@ public enum Country {
     public String getValue() {
         return value;
     }
+
 
     @JsonCreator
     public static Country fromValue(String value) {

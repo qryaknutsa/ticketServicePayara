@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.List;
 
 public enum TicketType {
-    @JsonValue
     CHEAP("CHEAP"),
     BUDGETARY("BUDGETARY"),
     USUAL("USUAL"),

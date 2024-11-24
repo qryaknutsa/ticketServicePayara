@@ -1,8 +1,9 @@
 package com.example.ticketServicePayara.controller;
 
-import com.example.ticketServicePayara.converter.TicketConverter;
+import com.example.ticketServicePayara.converter.TicketWriteConverter;
 import com.example.ticketServicePayara.dao.TicketDao;
 import com.example.ticketServicePayara.dto.TicketWrite;
+import com.example.ticketServicePayara.dto.TicketWriteUpdate;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "TMA/api/v2/tickets")
@@ -36,7 +36,7 @@ public class TicketController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> saveTicket(@Valid @RequestBody TicketWrite ticket) {
-        Ticket t = ticketService.save(TicketConverter.toTicket(ticket));
+        Ticket t = ticketService.save(TicketWriteConverter.toTicket(ticket));
         return ResponseEntity.status(201).body(t);
     }
 
@@ -47,8 +47,8 @@ public class TicketController {
     }
 
     @PatchMapping(value = "{id}")
-    public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody Map<String, Object> updates) {
-        ticketService.update(id, updates);
+    public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody @Valid TicketWriteUpdate ticket) {
+        ticketService.update(id, ticket);
         return ResponseEntity.status(200).body(id);
     }
 
@@ -72,9 +72,13 @@ public class TicketController {
     @GetMapping(value = "types/unique")
     public ResponseEntity<?> getUniqueTypes() {
         return ResponseEntity.status(200).body(ticketService.getUniqueTypes());
-
     }
 
+
+    @GetMapping(value = "people/{id}")
+    public ResponseEntity<?> getPerson(@PathVariable int id) {
+        return ResponseEntity.status(200).body(ticketService.getPersonById(id));
+    }
 
 }
 

@@ -1,14 +1,22 @@
 package com.example.ticketServicePayara.dao;
 
 
+import com.example.ticketServicePayara.dto.TicketWriteUpdate;
+import com.example.ticketServicePayara.enums.Country;
+import com.example.ticketServicePayara.enums.EyeColor;
+import com.example.ticketServicePayara.enums.HairColor;
 import com.example.ticketServicePayara.enums.TicketType;
 import com.example.ticketServicePayara.exception.*;
+import com.example.ticketServicePayara.model.Location;
+import com.example.ticketServicePayara.model.Person;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -43,7 +51,7 @@ public class TicketDao {
         int toIndex = Math.min(fromIndex + size, sortedList.size());
         List<Ticket> paginatedList = sortedList.subList(fromIndex, toIndex);
         if (paginatedList.isEmpty())
-            throw new TicketNotFoundException();
+            throw new TicketNotFoundException("По вашему запросу билеты не найдены.");
         return paginatedList;
     }
 
@@ -53,9 +61,18 @@ public class TicketDao {
 
         Ticket ticket = entityManager.find(Ticket.class, id);
 
-        if (ticket == null) throw new TicketNotFoundException();
+        if (ticket == null) throw new TicketNotFoundException("По вашему запросу билет не найден.");
         else return ticket;
+    }
 
+
+    public Person getPersonById(int id) {
+        if (id < 0) throw new InvalidParameterException("Значение id должно быть больше нуля");
+
+        Person person = entityManager.find(Person.class, id);
+
+        if (person == null) throw new TicketNotFoundException("По вашему запросу билет не найден.");
+        else return person;
     }
 
     @Transactional
@@ -68,55 +85,84 @@ public class TicketDao {
     }
 
 
-
-
-
     @Transactional
-    public void update(int id, Map<String, Object> updates) {
-        Ticket ticket = getById(id);
+    public void update(int id, TicketWriteUpdate newTicket) {
+        Ticket oldTicket = getById(id);
+        if (newTicket.getName() != null) oldTicket.setName(newTicket.getName());
+        if (newTicket.getPrice() != null) oldTicket.setPrice(newTicket.getPrice());
+        if (newTicket.getDiscount() != null) oldTicket.setDiscount(newTicket.getDiscount());
+        if (newTicket.getRefundable() != null) oldTicket.setRefundable(newTicket.getRefundable());
+        if (newTicket.getType() != null) oldTicket.setType(TicketType.valueOf(newTicket.getType()));
 
-        updates.forEach((field, value) -> {
-            switch (field) {
-                case "name":
-                    ticket.setName(value.toString());
-                    break;
-                case "coordinates":
-                    coordinatesDao.update(ticket.getCoordinates(), (Map<String, Object>) value);
-                    break;
-                case "price":
-                    ticket.setPrice((int) value);
-                    break;
-                case "discount":
-                    ticket.setDiscount((double) value);
-                    break;
-                case "refundable":
-                    ticket.setRefundable((Boolean) value);
-                    break;
-                case "type":
-                    ticket.setType(TicketType.fromValue(value.toString()));
-                    break;
-                case "person":
-                    personDao.update(ticket.getPerson(), (Map<String, Object>) value);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown field: " + field);
+        if (newTicket.getCoordinates() != null) {
+            if (newTicket.getCoordinates().getX() != null)
+                oldTicket.getCoordinates().setX(newTicket.getCoordinates().getX());
+            if (newTicket.getCoordinates().getY() != null)
+                oldTicket.getCoordinates().setY(newTicket.getCoordinates().getY());
+        }
+
+        if (newTicket.getPerson() != null) {
+            if (oldTicket.getPerson() == null) {
+                if (newTicket.getPerson().getHeight() != null &&
+                        newTicket.getPerson().getHairColor() != null &&
+                        newTicket.getPerson().getLocation() != null &&
+                        newTicket.getPerson().getLocation().getX() != null &&
+                        newTicket.getPerson().getLocation().getZ() != null) {
+                    oldTicket.setPerson(new Person());
+                    oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
+                    oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor()));
+                    if (newTicket.getPerson().getEyeColor() != null)
+                        oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor()));
+                    if (newTicket.getPerson().getNationality() != null)
+                        oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality()));
+
+                    oldTicket.getPerson().setLocation(new Location());
+                    oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
+                    oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
+
+                    if (newTicket.getPerson().getLocation().getY() != null)
+                        oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
+                    if (newTicket.getPerson().getLocation().getName() != null)
+                        oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
+                } else
+                    throw new RuntimeException("Плохой update, не хватает чего-то для создания норм person"); //TODO: создать exception и обработать его
+            } else {
+                if (newTicket.getPerson().getHeight() != null)
+                    oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
+                if (newTicket.getPerson().getEyeColor() != null)
+                    oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor()));
+                if (newTicket.getPerson().getHairColor() != null)
+                    oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor()));
+                if (newTicket.getPerson().getNationality() != null)
+                    oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality()));
+
+                if (newTicket.getPerson().getLocation().getX() != null)
+                    oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
+                if (newTicket.getPerson().getLocation().getZ() != null)
+                    oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
+                if (newTicket.getPerson().getLocation().getY() != null)
+                    oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
+                if (newTicket.getPerson().getLocation().getName() != null)
+                    oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
+
             }
-        });
-
-        entityManager.merge(ticket);
+        }
+        entityManager.merge(oldTicket);
     }
+
 
     @Transactional
     public void deleteById(int id) {
-        Ticket ticket = getById(id);
-        delete(ticket);
+        String deleteEventTicketSql = "DELETE FROM event_ticket WHERE ticket_id = " + id;
+        entityManager.createNativeQuery(deleteEventTicketSql).executeUpdate();
+
+        Ticket ticket = entityManager.find(Ticket.class, id);
+        if (ticket != null) {
+            entityManager.remove(ticket);
+        }
     }
 
 
-    @Transactional
-    public void delete(Ticket entity) {
-        entityManager.remove(entity);
-    }
 
     public double discountSum() {
         return getAll().stream()
@@ -125,9 +171,21 @@ public class TicketDao {
     }
 
     public long getAmountLessThanType(String type) {
-        TicketType t = TicketType.fromValue(type);
-        List<TicketType> list = TicketType.getLessTypes(t);
-        return getAll().stream().filter(ticket -> list.contains(ticket.getType())).count();
+        try {
+            TicketType t = TicketType.fromValue(type.toUpperCase());
+            List<TicketType> list = TicketType.getLessTypes(t);
+            long num = 0;
+            List<Ticket> tickets = getAll();
+
+            for (Ticket ticket : tickets) {
+                if (ticket.getType() == null || list.contains(ticket.getType()))  num++;
+            }
+            return num;
+        } catch (IllegalArgumentException e) {
+            TypeMismatchException q = new TypeMismatchException(type, TicketType.class);
+            q.initPropertyName("type");
+            throw q;
+        }
     }
 
     public Set<String> getUniqueTypes() {
@@ -242,16 +300,23 @@ public class TicketDao {
                     return false;
                 }
 
-                return switch (operator) {
-                    case "=" -> fieldValue != null && fieldValue.toString().equals(value);
-                    case "!=" -> !fieldValue.toString().equals(value);
-                    case ">" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0;
-                    case "<" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0;
-                    case ">=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0;
-                    case "<=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0;
-                    case "contains" -> fieldValue.toString().contains(value);
-                    default -> throw new NoFilterMethodException(operator);
-                };
+                try {
+                    return switch (operator) {
+                        case "=" -> fieldValue != null && fieldValue.toString().equals(parseValue(value, f.getType()));
+                        case "!=" -> !fieldValue.toString().equals(parseValue(value, f.getType()));
+                        case ">" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0;
+                        case "<" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0;
+                        case ">=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0;
+                        case "<=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0;
+                        case "contains" -> fieldValue.toString().contains(value);
+                        default -> throw new NoFilterMethodException(operator);
+                    };
+                } catch (NumberFormatException e) {
+                    TypeMismatchException q = new TypeMismatchException(value, f.getType());
+                    q.initPropertyName(f.getName());
+                    throw q;
+                }
+
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new NoFieldException(field);
             }
@@ -274,6 +339,7 @@ public class TicketDao {
     }
 
     private Object parseValue(String value, Class<?> targetType) {
+
         if (targetType == int.class || targetType == Integer.class) {
             return Integer.parseInt(value);
         } else if (targetType == double.class || targetType == Double.class) {
@@ -287,6 +353,7 @@ public class TicketDao {
         } else {
             return value;
         }
+
     }
 
 }

@@ -23,10 +23,10 @@ public class Event implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, columnDefinition="TEXT")
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition="TEXT")
     private String description;
 
     @Column(name = "startTime", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
@@ -40,7 +40,6 @@ public class Event implements Serializable {
     private ZonedDateTime endTime;
 
 
-//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "coordinates", nullable = false)
     private Coordinates coordinates;
@@ -48,7 +47,7 @@ public class Event implements Serializable {
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Column(nullable = false)
+    @Column(name = "discount",nullable = false)
     @JsonProperty("discount")
     private Double discount;
 
