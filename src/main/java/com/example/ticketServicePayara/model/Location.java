@@ -1,7 +1,6 @@
 package com.example.ticketServicePayara.model;
 
 import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
-import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -33,7 +32,6 @@ public class Location implements Serializable {
     @CustomNotNull
     @DecimalMin(value = "-1.79769313348623157E308", message = "Значение не может быть меньше возможного -1.79769313348623157E308")
     @DecimalMax(value = "1.79769313348623157E308", message = "Значение не может быть больше возможного 1.79769313348623157E308")
-    @ValidFraction(fraction = 6, message = "Значение должно иметь не более 6 знаков после запятой.")
     @Column(nullable = false)
     private Double z;
 

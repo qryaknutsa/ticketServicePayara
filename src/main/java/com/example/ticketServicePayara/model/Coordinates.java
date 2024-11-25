@@ -1,7 +1,6 @@
 package com.example.ticketServicePayara.model;
 
 import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
-import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -21,14 +20,12 @@ public class Coordinates implements Serializable {
     @Column
     @DecimalMin(value = "-1.79769313348623157E308", message = "Значение не может быть меньше возможного 1.4E-45.")
     @DecimalMax(value = "1.79769313348623157E308", message = "Значение не может быть больше возможного 3.4028235E38.")
-    @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     private float x = 0;
 
     @CustomNotNull
     @Column(nullable = false)
     @DecimalMin(value = "-1.79769313348623157E308", message = "Значение не может быть меньше возможного -1.79769313348623157E308.")
     @DecimalMax(value = "1.79769313348623157E308", message = "Значение не может быть больше возможного 1.79769313348623157E308.")
-    @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     private Float y;
 
     public Coordinates() {

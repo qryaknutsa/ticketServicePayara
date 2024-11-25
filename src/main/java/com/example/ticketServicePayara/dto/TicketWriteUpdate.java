@@ -1,6 +1,5 @@
 package com.example.ticketServicePayara.dto;
 
-import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -21,7 +20,6 @@ public class TicketWriteUpdate implements Serializable {
 
     @DecimalMin(value = "0", message = "Значение не может быть меньше возможного 0")
     @DecimalMax(value = "100", message = "Значение не может быть больше возможного 100")
-    @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     private Double discount;
 
     private Boolean refundable;

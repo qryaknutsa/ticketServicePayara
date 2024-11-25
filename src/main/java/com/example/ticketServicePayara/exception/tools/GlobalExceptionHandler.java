@@ -1,6 +1,7 @@
 package com.example.ticketServicePayara.exception.tools;
 
 import com.example.ticketServicePayara.exception.*;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -78,13 +79,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 //                ex, apiError, headers, HttpStatus.BAD_REQUEST, request);
 //    }
 
+
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Object[] args = new Object[]{ex.getPropertyName(), ex.getValue()};
         CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Не получилось конвертировать " + args[0] + " с значением: " + args[1], getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
-
 
 
     @Override
@@ -121,12 +122,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-
     //TODO: для refundable надо уточнить какое поле не читается
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ProblemDetail body = this.createProblemDetail(ex, status, ex.getCause().getLocalizedMessage(), (String) null, (Object[]) null, request);
-        return this.handleExceptionInternal(ex, body, headers, status, request);
+        Throwable cause = ex.getCause();
+        if (cause instanceof JsonMappingException) {
+            String message = cause.getMessage();
+            if (message.contains("Numeric value")) {
+                CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Значение превышает возможный диапазон: " + ex.getCause().getLocalizedMessage(), getFullURL());
+                return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Не получается прочесть данные: " + ex.getCause().getLocalizedMessage(), getFullURL());
+            return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        }
+        return null;
     }
 
     @ExceptionHandler(InvalidParameterException.class)
@@ -140,7 +150,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Поля " + ex.getMessage() + " нет.", getFullURL());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
-
 
 
     @ExceptionHandler(NoFilterMethodException.class)
@@ -163,7 +172,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex) {
-        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getCause().getLocalizedMessage(), getFullURL());
+        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, "Произошла внутренняя ошибка на сервере." + ex.getCause(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

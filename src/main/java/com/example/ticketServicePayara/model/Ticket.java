@@ -2,7 +2,6 @@ package com.example.ticketServicePayara.model;
 
 import com.example.ticketServicePayara.enums.TicketType;
 import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
-import com.example.ticketServicePayara.validation.annotation.ValidFraction;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -49,7 +48,6 @@ public class Ticket implements Serializable {
     @CustomNotNull
     @DecimalMin(value = "0", message = "Значение не может быть меньше возможного 0")
     @DecimalMax(value = "100", message = "Значение не может быть больше возможного 100")
-    @ValidFraction(fraction = 3, message = "Значение должно иметь не более 3 знаков после запятой.")
     @Column(nullable = false)
     private Double discount;
 

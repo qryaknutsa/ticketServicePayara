@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -163,7 +165,6 @@ public class TicketDao {
     }
 
 
-
     public double discountSum() {
         return getAll().stream()
                 .mapToDouble(Ticket::getDiscount)
@@ -178,7 +179,7 @@ public class TicketDao {
             List<Ticket> tickets = getAll();
 
             for (Ticket ticket : tickets) {
-                if (ticket.getType() == null || list.contains(ticket.getType()))  num++;
+                if (ticket.getType() == null || list.contains(ticket.getType())) num++;
             }
             return num;
         } catch (IllegalArgumentException e) {
@@ -212,7 +213,6 @@ public class TicketDao {
                 Comparator<Ticket> fieldComparator = createComparator(field, direction);
                 comparator = (comparator == null) ? fieldComparator : comparator.thenComparing(fieldComparator);
             }
-
             if (comparator != null) {
                 return list.stream().sorted(comparator).toList();
             }
@@ -223,25 +223,65 @@ public class TicketDao {
         return list;
     }
 
+//    private Comparator<Ticket> createComparator(String field, String method) {
+//        Comparator<Ticket> comparator;
+//        try {
+//            Field f = Ticket.class.getDeclaredField(field);
+//            f.setAccessible(true);
+//            comparator = Comparator.comparing(ticket -> {
+//                try {
+//                    return (Comparable) f.get(ticket);
+//                } catch (IllegalAccessException e) {
+//                    throw new RuntimeException("Error accessing field: " + field, e);
+//                }
+//            });
+//            if (method.equals("desc")) return comparator.reversed();
+//            else if (method.equals("asc")) return comparator;
+//            else throw new NoSortMethodException(method);
+//        } catch (NoSuchFieldException e) {
+//            throw new NoFieldException(field);
+//        }
+//    }
+
+
     private Comparator<Ticket> createComparator(String field, String method) {
         Comparator<Ticket> comparator;
         try {
-            Field f = Ticket.class.getDeclaredField(field);
-            f.setAccessible(true);
+            // Создаем Comparator, который учитывает null-значения (nullsFirst или nullsLast)
             comparator = Comparator.comparing(ticket -> {
                 try {
-                    return (Comparable) f.get(ticket);
-                } catch (IllegalAccessException e) {
+                    return (Comparable) getNestedFieldValue(ticket, field);
+                } catch (Exception e) {
                     throw new RuntimeException("Error accessing field: " + field, e);
                 }
-            });
+            }, Comparator.nullsFirst(Comparator.naturalOrder())); // null значения идут первыми
+
+            // Применяем направление сортировки
             if (method.equals("desc")) return comparator.reversed();
             else if (method.equals("asc")) return comparator;
             else throw new NoSortMethodException(method);
-        } catch (NoSuchFieldException e) {
-            throw new NoFieldException(field);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating comparator for field: " + field, e);
         }
     }
+
+    private Object getNestedFieldValue(Object obj, String fieldPath) throws Exception {
+        String[] fields = fieldPath.split("\\."); // Разделяем путь на части (например, "person.height")
+        Object currentObject = obj;
+
+        for (String fieldName : fields) {
+            if (currentObject == null) {
+                return null;
+            }
+
+            Field field = currentObject.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            currentObject = field.get(currentObject);
+        }
+
+        return currentObject;
+    }
+
 
 
     private List<Ticket> filterTickets(String filter, List<Ticket> list) {
@@ -280,49 +320,94 @@ public class TicketDao {
 
 
     private List<Ticket> applyFilter(List<Ticket> tickets, String field, String operator, String value) {
-        return tickets.stream().filter(ticket -> {
+        List<Ticket> toRet = new ArrayList<>();
+        for (Ticket ticket : tickets) {
             try {
                 Object fieldValue;
                 Field f;
                 String[] fieldParts = field.split("\\.");
                 if (fieldParts.length > 1) {
                     Object[] values = getNestedFieldValue(ticket, fieldParts);
+                    if(values == null) continue;
                     fieldValue = values[0];
                     f = (Field) values[1];
+                    if(fieldValue == null) continue;
                 } else {
-                    // Обработка простых полей
                     f = Ticket.class.getDeclaredField(field);
                     f.setAccessible(true);
                     fieldValue = f.get(ticket);
                 }
 
-                if (fieldValue == null && !("=").equals(operator)) {
-                    return false;
+                if (fieldValue == null) {
+                    continue;
                 }
 
                 try {
-                    return switch (operator) {
-                        case "=" -> fieldValue != null && fieldValue.toString().equals(parseValue(value, f.getType()));
-                        case "!=" -> !fieldValue.toString().equals(parseValue(value, f.getType()));
-                        case ">" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0;
-                        case "<" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0;
-                        case ">=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0;
-                        case "<=" -> ((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0;
-                        case "contains" -> fieldValue.toString().contains(value);
-                        default -> throw new NoFilterMethodException(operator);
-                    };
+                    switch (operator) {
+                        case "contains":
+                            String fieldValueStr = String.valueOf(fieldValue); // Преобразуем значение в строку
+                            if (fieldValueStr.toLowerCase().contains(value.toLowerCase()))
+                                toRet.add(ticket);
+                            break;
+                        case "=":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) == 0)
+                                toRet.add(ticket);
+                            break;
+                        case "!=":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) != 0)
+                                toRet.add(ticket);
+                            break;
+                        case ">":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0)
+                                toRet.add(ticket);
+                            break;
+                        case "<":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0)
+                                toRet.add(ticket);
+                            break;
+                        case ">=":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0)
+                                toRet.add(ticket);
+                            break;
+                        case "<=":
+                            if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0)
+                                toRet.add(ticket);
+                            break;
+                        default:
+                            throw new NoFilterMethodException(operator);
+                    }
+
                 } catch (NumberFormatException e) {
                     TypeMismatchException q = new TypeMismatchException(value, f.getType());
                     q.initPropertyName(f.getName());
                     throw q;
                 }
-
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new NoFieldException(field);
             }
-        }).collect(Collectors.toList());
-    }
+        }
 
+        return toRet;
+    }
+    private Object parseValue(String value, Class<?> targetType) {
+        if (targetType == int.class || targetType == Integer.class) {
+            return Integer.parseInt(value);
+        } else if (targetType == double.class || targetType == Double.class) {
+            return Double.parseDouble(value);
+        } else if (targetType == float.class || targetType == Float.class) {
+            return Float.parseFloat(value);
+        } else if (targetType == boolean.class || targetType == Boolean.class) {
+            return Boolean.parseBoolean(value);
+        } else if (Enum.class.isAssignableFrom(targetType)) {
+            try {
+                return targetType.getMethod("fromValue", String.class).invoke(null, value);
+            } catch (Exception e) {
+                return null;
+            }
+        } else {
+            return value;
+        }
+    }
     private Object[] getNestedFieldValue(Ticket ticket, String[] fieldParts) throws NoSuchFieldException, IllegalAccessException {
         Object currentObject = ticket;
         for (int i = 0; i < fieldParts.length - 1; i++) {
@@ -335,25 +420,10 @@ public class TicketDao {
         }
         Field finalField = currentObject.getClass().getDeclaredField(fieldParts[fieldParts.length - 1]);
         finalField.setAccessible(true);
-        return new Object[]{finalField.get(currentObject), finalField};
+
+        Object[] values = {finalField.get(currentObject), finalField};
+        return values;
     }
 
-    private Object parseValue(String value, Class<?> targetType) {
-
-        if (targetType == int.class || targetType == Integer.class) {
-            return Integer.parseInt(value);
-        } else if (targetType == double.class || targetType == Double.class) {
-            return Double.parseDouble(value);
-        } else if (targetType == float.class || targetType == Float.class) {
-            return Float.parseFloat(value);
-        } else if (targetType == boolean.class || targetType == Boolean.class) {
-            return Boolean.parseBoolean(value);
-        } else if (Enum.class.isAssignableFrom(targetType)) {
-            return Enum.valueOf((Class<Enum>) targetType, value);
-        } else {
-            return value;
-        }
-
-    }
 
 }
