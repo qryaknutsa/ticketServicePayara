@@ -16,7 +16,6 @@ public class CustomErrorResponse implements Serializable {
     @JsonProperty("instance")
     private String instance;
 
-    // Возможно, вам нужны геттеры и сеттеры
     public String getTitle() {
         return title;
     }

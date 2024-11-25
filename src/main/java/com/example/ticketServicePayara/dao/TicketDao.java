@@ -223,40 +223,18 @@ public class TicketDao {
         return list;
     }
 
-//    private Comparator<Ticket> createComparator(String field, String method) {
-//        Comparator<Ticket> comparator;
-//        try {
-//            Field f = Ticket.class.getDeclaredField(field);
-//            f.setAccessible(true);
-//            comparator = Comparator.comparing(ticket -> {
-//                try {
-//                    return (Comparable) f.get(ticket);
-//                } catch (IllegalAccessException e) {
-//                    throw new RuntimeException("Error accessing field: " + field, e);
-//                }
-//            });
-//            if (method.equals("desc")) return comparator.reversed();
-//            else if (method.equals("asc")) return comparator;
-//            else throw new NoSortMethodException(method);
-//        } catch (NoSuchFieldException e) {
-//            throw new NoFieldException(field);
-//        }
-//    }
 
 
     private Comparator<Ticket> createComparator(String field, String method) {
         Comparator<Ticket> comparator;
         try {
-            // Создаем Comparator, который учитывает null-значения (nullsFirst или nullsLast)
             comparator = Comparator.comparing(ticket -> {
                 try {
                     return (Comparable) getNestedFieldValue(ticket, field);
                 } catch (Exception e) {
                     throw new RuntimeException("Error accessing field: " + field, e);
                 }
-            }, Comparator.nullsFirst(Comparator.naturalOrder())); // null значения идут первыми
-
-            // Применяем направление сортировки
+            }, Comparator.nullsFirst(Comparator.naturalOrder()));
             if (method.equals("desc")) return comparator.reversed();
             else if (method.equals("asc")) return comparator;
             else throw new NoSortMethodException(method);
@@ -266,7 +244,7 @@ public class TicketDao {
     }
 
     private Object getNestedFieldValue(Object obj, String fieldPath) throws Exception {
-        String[] fields = fieldPath.split("\\."); // Разделяем путь на части (например, "person.height")
+        String[] fields = fieldPath.split("\\.");
         Object currentObject = obj;
 
         for (String fieldName : fields) {
@@ -345,7 +323,7 @@ public class TicketDao {
                 try {
                     switch (operator) {
                         case "contains":
-                            String fieldValueStr = String.valueOf(fieldValue); // Преобразуем значение в строку
+                            String fieldValueStr = String.valueOf(fieldValue);
                             if (fieldValueStr.toLowerCase().contains(value.toLowerCase()))
                                 toRet.add(ticket);
                             break;

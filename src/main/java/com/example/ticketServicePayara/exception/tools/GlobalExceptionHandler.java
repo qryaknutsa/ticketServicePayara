@@ -30,56 +30,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     String NOT_FOUND = "Объект не найден";
 
 
-//    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity<Object> handleResourceNotFoundException(ChangeSetPersister.NotFoundException ex, WebRequest request) {
-//        Map<String, Object> body = new HashMap<>();
-//        body.put("timestamp", LocalDateTime.now());
-//        body.put("message", "Resource not found");
-//
-//        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
-//    }
-
-
-    // Обработка всех других исключений
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-//        Map<String, Object> body = new HashMap<>();
-//        body.put("timestamp", LocalDateTime.now());
-//        body.put("message", "An error occurred");
-//
-//        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ResponseEntity<String> handleIllegalArgument(Exception ex, WebRequest request) {
-//        String[] q = request.getParameterValues("ticket");
-//        System.out.println(Arrays.toString(q));
-//        return ResponseEntity.badRequest().body(ex.getMessage());
-//    }
-
-
-//    @Override
-//    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-//            MethodArgumentNotValidException ex,
-//            HttpHeaders headers,
-//            HttpStatus status,
-//            WebRequest request) {
-//        List<String> errors = new ArrayList<String>();
-//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-//            errors.add(error.getField() + ": " + error.getDefaultMessage());
-//        }
-//        for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
-//            errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
-//        }
-//
-//         ErrorResponseArray apiError =
-//                new ErrorResponseArray(HttpStatus.BAD_REQUEST.name(), errors, request.getContextPath());
-//        return handleExceptionInternal(
-//                ex, apiError, headers, HttpStatus.BAD_REQUEST, request);
-//    }
-
-
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Object[] args = new Object[]{ex.getPropertyName(), ex.getValue()};

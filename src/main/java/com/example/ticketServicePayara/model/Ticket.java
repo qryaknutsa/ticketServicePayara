@@ -30,7 +30,6 @@ public class Ticket implements Serializable {
     @CustomNotNull
     @Valid
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "coordinates", nullable = false)
     private Coordinates coordinates;
 
@@ -44,7 +43,6 @@ public class Ticket implements Serializable {
     @Column(nullable = false)
     private Integer price;
 
-    //TODO: попроавить Swagger - required
     @CustomNotNull
     @DecimalMin(value = "0", message = "Значение не может быть меньше возможного 0")
     @DecimalMax(value = "100", message = "Значение не может быть больше возможного 100")

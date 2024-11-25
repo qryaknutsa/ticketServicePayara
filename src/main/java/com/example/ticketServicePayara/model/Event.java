@@ -53,9 +53,9 @@ public class Event implements Serializable {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinTable(
-            name = "event_ticket",  // Имя таблицы-соединителя
-            joinColumns = @JoinColumn(name = "event_id"),  // Колонка для связи с Event
-            inverseJoinColumns = @JoinColumn(name = "ticket_id")  // Колонка для связи с Ticket
+            name = "event_ticket",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "ticket_id")
     )
 
     private List<Ticket> tickets = new ArrayList<>();
