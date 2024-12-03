@@ -42,6 +42,14 @@ public class Location implements Serializable {
     public Location() {
     }
 
+    public Location(Location location) {
+        this.x = location.getX();
+        this.y = location.getY();
+        this.z = location.getZ();
+        if(location.getName() != null) this.name = location.getName();
+    }
+
+
     public Location(int x, Integer y, double z, String name) {
         this.x = x;
         this.y = y;

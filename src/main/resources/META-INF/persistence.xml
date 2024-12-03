@@ -4,14 +4,14 @@
              https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
     <persistence-unit name="myPersistenceUnit">
-        <jta-data-source>soa</jta-data-source> <!-- Убедитесь, что это имя вашего JDBC Resource -->
+        <jta-data-source>soa</jta-data-source>
         <class>com.example.ticketServicePayara.model.Coordinates</class>
         <class>com.example.ticketServicePayara.model.Location</class>
         <class>com.example.ticketServicePayara.model.Person</class>
         <class>com.example.ticketServicePayara.model.Ticket</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/> <!-- Опционально -->
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.SunOneJtaPlatform"/>
         </properties>
     </persistence-unit>

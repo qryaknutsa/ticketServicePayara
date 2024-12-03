@@ -58,6 +58,7 @@
 - [x] проверка id валиден, 
 - [x] 404 если не найден
 - [x] filter fields in update
+- [ ] надо ли изменять eventId?
 
 
 ## DELETE /tickets/{id}

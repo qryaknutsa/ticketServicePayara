@@ -24,7 +24,7 @@ public class Ticket implements Serializable {
 
     @CustomNotNull
     @Size(min = 1, message = "Значение не должно быть пустым.")
-    @Column(nullable = false, columnDefinition="TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 
     @CustomNotNull
@@ -34,7 +34,7 @@ public class Ticket implements Serializable {
     private Coordinates coordinates;
 
     @Column(name = "creationDate", nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private ZonedDateTime creationDate = ZonedDateTime.now();
 
     @CustomNotNull
@@ -61,9 +61,23 @@ public class Ticket implements Serializable {
     @JoinColumn(name = "person")
     private Person person;
 
+    @Column(name = "eventId")
+    private int eventId = 0;
 
 
     public Ticket() {
+    }
+
+
+    public Ticket(Ticket ticket) {
+        this.name = ticket.getName();
+        this.price = ticket.getPrice();
+        this.coordinates = new Coordinates(ticket.getCoordinates());
+        this.discount = ticket.getDiscount();
+        if(ticket.getRefundable() != null) this.refundable = ticket.getRefundable();
+        if(ticket.getType() != null) this.type = ticket.getType();
+        if (ticket.getPerson() != null) this.person = new Person(ticket.getPerson());
+        this.eventId = ticket.getEventId();
     }
 
     public Ticket(String name, Coordinates coordinates, int price, double discount, Boolean refundable, TicketType type, Person person) {

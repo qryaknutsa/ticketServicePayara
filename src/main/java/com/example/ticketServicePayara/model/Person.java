@@ -52,6 +52,14 @@ public class Person implements Serializable {
     public Person() {
     }
 
+    public Person(Person person) {
+        this.height = person.getHeight();
+        if(person.getEyeColor() != null) this.eyeColor = person.getEyeColor();
+        this.hairColor = person.getHairColor();
+        if(person.getNationality() != null) this.nationality = person.getNationality();
+        this.location = new Location(person.getLocation());
+    }
+
     public Person(int height, EyeColor eyeColor, HairColor hairColor, Country nationality, Location location) {
         this.height = height;
         this.eyeColor = eyeColor;

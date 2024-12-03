@@ -88,6 +88,22 @@ public class TicketDao {
 
 
     @Transactional
+    public List<Integer> saveTickets(Ticket entity, int num) {
+        List<Integer> ids = new ArrayList<>();
+        for (int i = 0; i < num; i++) {
+            Ticket newTicket = new Ticket(entity);
+            entityManager.persist(newTicket);
+            ids.add(newTicket.getId());
+            if (i % 50 == 0) {
+                entityManager.flush();
+                entityManager.clear();
+            }
+        }
+        return ids;
+    }
+
+
+    @Transactional
     public void update(int id, TicketWriteUpdate newTicket) {
         Ticket oldTicket = getById(id);
         if (newTicket.getName() != null) oldTicket.setName(newTicket.getName());
@@ -155,11 +171,16 @@ public class TicketDao {
 
     @Transactional
     public void deleteById(int id) {
-        String deleteEventTicketSql = "DELETE FROM event_ticket WHERE ticket_id = " + id;
-        entityManager.createNativeQuery(deleteEventTicketSql).executeUpdate();
-
         Ticket ticket = entityManager.find(Ticket.class, id);
         if (ticket != null) {
+            entityManager.remove(ticket);
+        }
+    }
+
+    @Transactional
+    public void deleteTicketsByIds(int id) {
+        List<Ticket> tickets = getAll().stream().filter(ticket -> ticket.getEventId() == id).toList();
+        for (Ticket ticket : tickets) {
             entityManager.remove(ticket);
         }
     }
@@ -224,7 +245,6 @@ public class TicketDao {
     }
 
 
-
     private Comparator<Ticket> createComparator(String field, String method) {
         Comparator<Ticket> comparator;
         try {
@@ -259,7 +279,6 @@ public class TicketDao {
 
         return currentObject;
     }
-
 
 
     private List<Ticket> filterTickets(String filter, List<Ticket> list) {
@@ -306,10 +325,10 @@ public class TicketDao {
                 String[] fieldParts = field.split("\\.");
                 if (fieldParts.length > 1) {
                     Object[] values = getNestedFieldValue(ticket, fieldParts);
-                    if(values == null) continue;
+                    if (values == null) continue;
                     fieldValue = values[0];
                     f = (Field) values[1];
-                    if(fieldValue == null) continue;
+                    if (fieldValue == null) continue;
                 } else {
                     f = Ticket.class.getDeclaredField(field);
                     f.setAccessible(true);
@@ -367,6 +386,7 @@ public class TicketDao {
 
         return toRet;
     }
+
     private Object parseValue(String value, Class<?> targetType) {
         if (targetType == int.class || targetType == Integer.class) {
             return Integer.parseInt(value);
@@ -386,6 +406,7 @@ public class TicketDao {
             return value;
         }
     }
+
     private Object[] getNestedFieldValue(Ticket ticket, String[] fieldParts) throws NoSuchFieldException, IllegalAccessException {
         Object currentObject = ticket;
         for (int i = 0; i < fieldParts.length - 1; i++) {

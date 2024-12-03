@@ -21,7 +21,6 @@ public class TicketWrite implements Serializable {
     @Valid
     private CoordinatesWrite coordinates;
 
-
     @CustomNotNull
     @Positive(message = "Значение должен быть больше нуля")
     @Max(value = 2147483647, message = "Значение не может быть больше возможного 2147483647")
@@ -34,10 +33,13 @@ public class TicketWrite implements Serializable {
 
     private Boolean refundable;
 
-
     @Pattern(regexp = "(?i)^(CHEAP|VIP|USUAL|BUDGETARY)$", message = "Некорректный выбор типа билета'")
     private String type;
 
     @Valid
     private PersonWrite person;
+
+    @Min(value = 0, message = "Значение должно быть больше 0")
+    private Integer eventId;
+
 }

@@ -1,9 +1,11 @@
 package com.example.ticketServicePayara.model;
 
 
+import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,21 +25,27 @@ public class Event implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "title", nullable = false, columnDefinition="TEXT")
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
     private String title;
 
-    @Column(name = "description", columnDefinition="TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "startTime", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     @JsonProperty("startTime")
     private ZonedDateTime startTime;
 
     @Column(name = "endTime", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     @JsonProperty("endTime")
     private ZonedDateTime endTime;
+
+    @CustomNotNull
+    @Valid
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "location", nullable = false)
+    private Location location;
 
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -47,18 +55,10 @@ public class Event implements Serializable {
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Column(name = "discount",nullable = false)
+    @Column(name = "discount", nullable = false)
     @JsonProperty("discount")
     private Double discount;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JoinTable(
-            name = "event_ticket",
-            joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "ticket_id")
-    )
-
-    private List<Ticket> tickets = new ArrayList<>();
 
     public Event() {
     }

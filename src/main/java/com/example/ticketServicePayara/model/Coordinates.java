@@ -31,6 +31,12 @@ public class Coordinates implements Serializable {
     public Coordinates() {
     }
 
+    public Coordinates(Coordinates coordinates) {
+        this.x = coordinates.getX();
+        this.y = coordinates.getY();
+    }
+
+
     public Coordinates(float x, Float y) {
         this.x = x;
         this.y = y;
