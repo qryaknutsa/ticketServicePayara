@@ -1,14 +1,15 @@
 package com.example.ticketServicePayara.controller;
 
+import com.example.ticketServicePayara.converter.TicketWithEventConverter;
 import com.example.ticketServicePayara.converter.TicketWriteConverter;
 import com.example.ticketServicePayara.dao.TicketDao;
 //import com.example.ticketServicePayara.dto.TicketIds;
+import com.example.ticketServicePayara.dto.TicketWithEventWrite;
 import com.example.ticketServicePayara.dto.TicketWrite;
 import com.example.ticketServicePayara.dto.TicketWriteUpdate;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.annotation.Validated;
@@ -40,34 +41,24 @@ public class TicketController {
         return ResponseEntity.status(201).body(t);
     }
 
-    @PostMapping(value = "bulk/{num}")
-    public ResponseEntity<?> saveTickets(@Valid @RequestBody TicketWrite ticket,@PathVariable int num){
-        List<Integer> ids = ticketService.saveTickets(TicketWriteConverter.toTicket(ticket), num);
-        return ResponseEntity.status(201).body(ids);
-    }
 
     @GetMapping(value = "{id}")
     public ResponseEntity<?> getTicketById(@PathVariable int id) {
-        return ResponseEntity.status(200).body(ticketService.getById(id));
+        return ResponseEntity.status(200).body(TicketWithEventConverter.toTicketWithEventWrite(ticketService.getById(id)));
     }
+
+
 
     @PatchMapping(value = "{id}")
     public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody @Valid TicketWriteUpdate ticket) {
-        ticketService.update(id, ticket);
-        return ResponseEntity.status(203).body(id);
+        Ticket t = ticketService.update(id, ticket);
+        return ResponseEntity.status(203).body(t);
     }
 
     @DeleteMapping(value = "{id}")
     public ResponseEntity<?> deleteTicketById(@PathVariable int id) {
         ticketService.deleteById(id);
         return ResponseEntity.status(204).body(id);
-    }
-
-
-    @DeleteMapping(value = "bulk/{id}")
-    public ResponseEntity<?> deleteTicketsByEventId(@PathVariable int id){
-        ticketService.deleteTicketsByIds(id);
-        return ResponseEntity.status(204).build();
     }
 
     @GetMapping(value = "discounts")
@@ -83,6 +74,23 @@ public class TicketController {
     @GetMapping(value = "types/unique")
     public ResponseEntity<?> getUniqueTypes() {
         return ResponseEntity.status(200).body(ticketService.getUniqueTypes());
+    }
+
+    @GetMapping(value = "events/{eventId}")
+    public ResponseEntity<?> getTicketByEventId(@PathVariable int eventId) {
+        return ResponseEntity.status(200).body(ticketService.getNumAllByEventId(eventId));
+    }
+
+    @PostMapping(value = "bulk/{num}")
+    public ResponseEntity<?> saveTickets(@Valid @RequestBody TicketWithEventWrite ticket, @PathVariable int num) {
+        List<Integer> ids = ticketService.saveTickets(TicketWithEventConverter.toTicket(ticket), num);
+        return ResponseEntity.status(201).body(ids);
+    }
+
+    @DeleteMapping(value = "bulk/{id}")
+    public ResponseEntity<?> deleteTicketsByEventId(@PathVariable int id) {
+        ticketService.deleteTicketsByEventIds(id);
+        return ResponseEntity.status(204).build();
     }
 
 

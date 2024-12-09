@@ -19,6 +19,8 @@ import java.io.Serializable;
 @Data
 public class PersonWrite implements Serializable {
 
+    private Integer id;
+
     @CustomNotNull
     @Min(value = 50, message = "Значение должно быть больше 50")
     @Max(value = 300, message = "Значение должно быть меньше 300")

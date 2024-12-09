@@ -1,6 +1,8 @@
 package com.example.ticketServicePayara.dao;
 
 
+import com.example.ticketServicePayara.converter.TicketWithEventConverter;
+import com.example.ticketServicePayara.dto.TicketWithEventWrite;
 import com.example.ticketServicePayara.dto.TicketWriteUpdate;
 import com.example.ticketServicePayara.enums.Country;
 import com.example.ticketServicePayara.enums.EyeColor;
@@ -12,6 +14,8 @@ import com.example.ticketServicePayara.model.Person;
 import com.example.ticketServicePayara.model.Ticket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.validation.ValidationException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.lang.reflect.Field;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -39,10 +41,20 @@ public class TicketDao {
         return entityManager.createQuery("SELECT l FROM Ticket l", Ticket.class).getResultList();
     }
 
+    public int getNumAllByEventId(int eventId) {
+        TypedQuery<Ticket> query = entityManager.createQuery("SELECT l FROM Ticket l WHERE l.eventId=:eventId", Ticket.class);
+        query.setParameter("eventId", eventId);
+        return query.getResultList().size();
+    }
+
+
     public List<Ticket> getAllFilteredSortedPaginated(Integer size, Integer page, String sort, String filter) {
         if (size == null) size = 10;
         if (page == null) page = 0;
         else page--;
+
+        isIntegerPositive(size, "size");
+        isIntegerPositive(page, "page");
 
         List<Ticket> list = getAll();
         List<Ticket> filteredList = filterTickets(filter, list);
@@ -59,20 +71,19 @@ public class TicketDao {
 
 
     public Ticket getById(int id) {
-        if (id < 0) throw new InvalidParameterException("Значение id должно быть больше нуля");
-
+        isIntegerPositive(id, "id");
         Ticket ticket = entityManager.find(Ticket.class, id);
-
         if (ticket == null) throw new TicketNotFoundException("По вашему запросу билет не найден.");
-        else return ticket;
+        else {
+            TicketWithEventWrite t = TicketWithEventConverter.toTicketWithEventWrite(ticket);
+            return ticket;
+        }
     }
 
 
     public Person getPersonById(int id) {
-        if (id < 0) throw new InvalidParameterException("Значение id должно быть больше нуля");
-
+        isIntegerPositive(id, "id");
         Person person = entityManager.find(Person.class, id);
-
         if (person == null) throw new TicketNotFoundException("По вашему запросу билет не найден.");
         else return person;
     }
@@ -89,6 +100,8 @@ public class TicketDao {
 
     @Transactional
     public List<Integer> saveTickets(Ticket entity, int num) {
+        isIntegerPositive(num, "число билетов");
+
         List<Integer> ids = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             Ticket newTicket = new Ticket(entity);
@@ -104,73 +117,20 @@ public class TicketDao {
 
 
     @Transactional
-    public void update(int id, TicketWriteUpdate newTicket) {
+    public Ticket update(int id, TicketWriteUpdate newTicket) {
+        isIntegerPositive(id, "id");
         Ticket oldTicket = getById(id);
-        if (newTicket.getName() != null) oldTicket.setName(newTicket.getName());
-        if (newTicket.getPrice() != null) oldTicket.setPrice(newTicket.getPrice());
-        if (newTicket.getDiscount() != null) oldTicket.setDiscount(newTicket.getDiscount());
-        if (newTicket.getRefundable() != null) oldTicket.setRefundable(newTicket.getRefundable());
-        if (newTicket.getType() != null) oldTicket.setType(TicketType.valueOf(newTicket.getType()));
-
-        if (newTicket.getCoordinates() != null) {
-            if (newTicket.getCoordinates().getX() != null)
-                oldTicket.getCoordinates().setX(newTicket.getCoordinates().getX());
-            if (newTicket.getCoordinates().getY() != null)
-                oldTicket.getCoordinates().setY(newTicket.getCoordinates().getY());
-        }
-
-        if (newTicket.getPerson() != null) {
-            if (oldTicket.getPerson() == null) {
-                if (newTicket.getPerson().getHeight() != null &&
-                        newTicket.getPerson().getHairColor() != null &&
-                        newTicket.getPerson().getLocation() != null &&
-                        newTicket.getPerson().getLocation().getX() != null &&
-                        newTicket.getPerson().getLocation().getZ() != null) {
-                    oldTicket.setPerson(new Person());
-                    oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
-                    oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor()));
-                    if (newTicket.getPerson().getEyeColor() != null)
-                        oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor()));
-                    if (newTicket.getPerson().getNationality() != null)
-                        oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality()));
-
-                    oldTicket.getPerson().setLocation(new Location());
-                    oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
-                    oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
-
-                    if (newTicket.getPerson().getLocation().getY() != null)
-                        oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
-                    if (newTicket.getPerson().getLocation().getName() != null)
-                        oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
-                } else
-                    throw new RuntimeException("Плохой update, не хватает чего-то для создания норм person"); //TODO: создать exception и обработать его
-            } else {
-                if (newTicket.getPerson().getHeight() != null)
-                    oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
-                if (newTicket.getPerson().getEyeColor() != null)
-                    oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor()));
-                if (newTicket.getPerson().getHairColor() != null)
-                    oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor()));
-                if (newTicket.getPerson().getNationality() != null)
-                    oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality()));
-
-                if (newTicket.getPerson().getLocation().getX() != null)
-                    oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
-                if (newTicket.getPerson().getLocation().getZ() != null)
-                    oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
-                if (newTicket.getPerson().getLocation().getY() != null)
-                    oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
-                if (newTicket.getPerson().getLocation().getName() != null)
-                    oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
-
-            }
-        }
+        updateNonObjectFields(oldTicket, newTicket);
+        updateCoordinates(oldTicket, newTicket);
+        updatePerson(oldTicket, newTicket);
         entityManager.merge(oldTicket);
+        return oldTicket;
     }
 
 
     @Transactional
     public void deleteById(int id) {
+        isIntegerPositive(id, "id");
         Ticket ticket = entityManager.find(Ticket.class, id);
         if (ticket != null) {
             entityManager.remove(ticket);
@@ -178,7 +138,8 @@ public class TicketDao {
     }
 
     @Transactional
-    public void deleteTicketsByIds(int id) {
+    public void deleteTicketsByEventIds(int id) {
+        isIntegerPositive(id, "event id");
         List<Ticket> tickets = getAll().stream().filter(ticket -> ticket.getEventId() == id).toList();
         for (Ticket ticket : tickets) {
             entityManager.remove(ticket);
@@ -193,6 +154,7 @@ public class TicketDao {
     }
 
     public long getAmountLessThanType(String type) {
+
         try {
             TicketType t = TicketType.fromValue(type.toUpperCase());
             List<TicketType> list = TicketType.getLessTypes(t);
@@ -205,7 +167,7 @@ public class TicketDao {
             return num;
         } catch (IllegalArgumentException e) {
             TypeMismatchException q = new TypeMismatchException(type, TicketType.class);
-            q.initPropertyName("type");
+            q.initPropertyName("ticket type");
             throw q;
         }
     }
@@ -230,7 +192,6 @@ public class TicketDao {
                 String[] parts = sortCondition.split(":");
                 String field = parts[0].trim();
                 String direction = (parts.length > 1) ? parts[1].trim().toLowerCase() : "asc";
-
                 Comparator<Ticket> fieldComparator = createComparator(field, direction);
                 comparator = (comparator == null) ? fieldComparator : comparator.thenComparing(fieldComparator);
             }
@@ -250,7 +211,7 @@ public class TicketDao {
         try {
             comparator = Comparator.comparing(ticket -> {
                 try {
-                    return (Comparable) getNestedFieldValue(ticket, field);
+                    return (Comparable) getNestedFieldValueForSort(ticket, field);
                 } catch (Exception e) {
                     throw new RuntimeException("Error accessing field: " + field, e);
                 }
@@ -259,11 +220,11 @@ public class TicketDao {
             else if (method.equals("asc")) return comparator;
             else throw new NoSortMethodException(method);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating comparator for field: " + field, e);
+            throw new NoSortMethodException(method);
         }
     }
 
-    private Object getNestedFieldValue(Object obj, String fieldPath) throws Exception {
+    private Object getNestedFieldValueForSort(Object obj, String fieldPath) throws Exception {
         String[] fields = fieldPath.split("\\.");
         Object currentObject = obj;
 
@@ -285,36 +246,24 @@ public class TicketDao {
         if (filter != null && !filter.isEmpty()) {
             String[] conditions = filter.split(",");
             for (String condition : conditions) {
-                if (condition.contains(">=")) {
-                    String[] parts = condition.split(">=");
-                    list = applyFilter(list, parts[0].trim(), ">=", parts[1].trim());
-                } else if (condition.contains("<=")) {
-                    String[] parts = condition.split("<=");
-                    list = applyFilter(list, parts[0].trim(), "<=", parts[1].trim());
-                } else if (condition.contains(">")) {
-                    String[] parts = condition.split(">");
-                    list = applyFilter(list, parts[0].trim(), ">", parts[1].trim());
-                } else if (condition.contains("<")) {
-                    String[] parts = condition.split("<");
-                    list = applyFilter(list, parts[0].trim(), "<", parts[1].trim());
-                } else if (condition.contains("!=")) {
-                    String[] parts = condition.split("!=");
-                    list = applyFilter(list, parts[0].trim(), "!=", parts[1].trim());
-                } else if (condition.contains("=")) {
-                    String[] parts = condition.split("=");
-                    list = applyFilter(list, parts[0].trim(), "=", parts[1].trim());
-                } else if (condition.contains("contains")) {
-                    String[] parts = condition.split("contains");
-                    list = applyFilter(list, parts[0].trim(), "contains", parts[1].trim());
-                } else {
-                    throw new NoFilterMethodException(condition);
-                }
+                if (condition.contains(">=")) list = checkAndApplyFilter(condition, ">=", list);
+                else if (condition.contains("<=")) list = checkAndApplyFilter(condition, "<=", list);
+                else if (condition.contains(">")) list = checkAndApplyFilter(condition, ">", list);
+                else if (condition.contains("<")) list = checkAndApplyFilter(condition, "<", list);
+                else if (condition.contains("!=")) list = checkAndApplyFilter(condition, "!=", list);
+                else if (condition.contains("=")) list = checkAndApplyFilter(condition, "=", list);
+                else if (condition.contains("contains")) list = checkAndApplyFilter(condition, "contains", list);
+                else throw new NoFilterMethodException(condition);
             }
-
         }
         return list;
     }
 
+    private List<Ticket> checkAndApplyFilter(String condition, String filterMethod, List<Ticket> list) {
+        String[] parts = condition.split(filterMethod);
+        if (parts.length < 2) throw new NoValueException();
+        return applyFilter(list, parts[0].trim(), filterMethod, parts[1].trim());
+    }
 
     private List<Ticket> applyFilter(List<Ticket> tickets, String field, String operator, String value) {
         List<Ticket> toRet = new ArrayList<>();
@@ -324,49 +273,60 @@ public class TicketDao {
                 Field f;
                 String[] fieldParts = field.split("\\.");
                 if (fieldParts.length > 1) {
-                    Object[] values = getNestedFieldValue(ticket, fieldParts);
+                    Object[] values = getNestedFieldValueForFilter(ticket, fieldParts);
                     if (values == null) continue;
                     fieldValue = values[0];
                     f = (Field) values[1];
-                    if (fieldValue == null) continue;
                 } else {
                     f = Ticket.class.getDeclaredField(field);
                     f.setAccessible(true);
                     fieldValue = f.get(ticket);
                 }
 
-                if (fieldValue == null) {
-                    continue;
-                }
-
                 try {
                     switch (operator) {
                         case "contains":
+                            if (fieldValue == null) continue;
                             String fieldValueStr = String.valueOf(fieldValue);
                             if (fieldValueStr.toLowerCase().contains(value.toLowerCase()))
                                 toRet.add(ticket);
                             break;
                         case "=":
+                            if (fieldValue == null) continue;
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) == 0)
                                 toRet.add(ticket);
                             break;
                         case "!=":
+                            if (fieldValue == null) {
+                                toRet.add(ticket);
+                                continue;
+                            };
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) != 0)
                                 toRet.add(ticket);
                             break;
                         case ">":
+                            if (fieldValue == null) continue;
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) > 0)
                                 toRet.add(ticket);
                             break;
                         case "<":
+                            if (fieldValue == null) {
+                                toRet.add(ticket);
+                                continue;
+                            };
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) < 0)
                                 toRet.add(ticket);
                             break;
                         case ">=":
+                            if (fieldValue == null) continue;
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) >= 0)
                                 toRet.add(ticket);
                             break;
                         case "<=":
+                            if (fieldValue == null) {
+                                toRet.add(ticket);
+                                continue;
+                            };
                             if (((Comparable) fieldValue).compareTo(parseValue(value, f.getType())) <= 0)
                                 toRet.add(ticket);
                             break;
@@ -398,16 +358,20 @@ public class TicketDao {
             return Boolean.parseBoolean(value);
         } else if (Enum.class.isAssignableFrom(targetType)) {
             try {
-                return targetType.getMethod("fromValue", String.class).invoke(null, value);
+                return targetType.getMethod("fromValue", String.class).invoke(null, value.toUpperCase());
+            } catch (InvocationTargetException e) {
+                TypeMismatchException q = new TypeMismatchException(value, TicketType.class);
+                q.initPropertyName(targetType.getSimpleName());
+                throw q;
             } catch (Exception e) {
-                return null;
+                throw new RuntimeException(e.toString());
             }
         } else {
             return value;
         }
     }
 
-    private Object[] getNestedFieldValue(Ticket ticket, String[] fieldParts) throws NoSuchFieldException, IllegalAccessException {
+    private Object[] getNestedFieldValueForFilter(Ticket ticket, String[] fieldParts) throws NoSuchFieldException, IllegalAccessException {
         Object currentObject = ticket;
         for (int i = 0; i < fieldParts.length - 1; i++) {
             Field field = currentObject.getClass().getDeclaredField(fieldParts[i]);
@@ -420,9 +384,102 @@ public class TicketDao {
         Field finalField = currentObject.getClass().getDeclaredField(fieldParts[fieldParts.length - 1]);
         finalField.setAccessible(true);
 
-        Object[] values = {finalField.get(currentObject), finalField};
-        return values;
+        return new Object[]{finalField.get(currentObject), finalField};
     }
 
+    private void updateNonObjectFields(Ticket oldTicket, TicketWriteUpdate newTicket) {
+        if (newTicket.getName() != null) oldTicket.setName(newTicket.getName());
+        if (newTicket.getPrice() != null) oldTicket.setPrice(newTicket.getPrice());
+        if (newTicket.getDiscount() != null) oldTicket.setDiscount(newTicket.getDiscount());
+        if (newTicket.getRefundable() != null) oldTicket.setRefundable(newTicket.getRefundable());
+        if (newTicket.getType() != null) oldTicket.setType(TicketType.valueOf(newTicket.getType()));
+    }
 
+    private void updateCoordinates(Ticket oldTicket, TicketWriteUpdate newTicket) {
+        if (newTicket.getCoordinates() != null) {
+            if (newTicket.getCoordinates().getX() != null)
+                oldTicket.getCoordinates().setX(newTicket.getCoordinates().getX());
+            if (newTicket.getCoordinates().getY() != null)
+                oldTicket.getCoordinates().setY(newTicket.getCoordinates().getY());
+        }
+    }
+
+    private void updatePersonAndLocationIfExists(Ticket oldTicket, TicketWriteUpdate newTicket) {
+        if (newTicket.getPerson().getHeight() != null)
+            oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
+        if (newTicket.getPerson().getEyeColor() != null)
+            oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor().toUpperCase()));
+        if (newTicket.getPerson().getHairColor() != null)
+            oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor().toUpperCase()));
+        if (newTicket.getPerson().getNationality() != null)
+            oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality().toUpperCase()));
+        if (newTicket.getPerson().getLocation() != null) {
+            if (newTicket.getPerson().getLocation().getX() != null)
+                oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
+            if (newTicket.getPerson().getLocation().getZ() != null)
+                oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
+            if (newTicket.getPerson().getLocation().getY() != null)
+                oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
+            if (newTicket.getPerson().getLocation().getName() != null)
+                oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
+        }
+    }
+
+    private void updatePersonIfNotExists(Ticket oldTicket, TicketWriteUpdate newTicket) {
+        if (newTicket.getPerson().getHeight() != null &&
+                newTicket.getPerson().getHairColor() != null &&
+                (newTicket.getPerson().getLocation() != null &&
+                        newTicket.getPerson().getLocation().getX() != null &&
+                        newTicket.getPerson().getLocation().getZ() != null)) {
+            oldTicket.setPerson(new Person());
+            oldTicket.getPerson().setHeight(newTicket.getPerson().getHeight());
+            oldTicket.getPerson().setHairColor(HairColor.valueOf(newTicket.getPerson().getHairColor().toUpperCase()));
+            if (newTicket.getPerson().getEyeColor() != null)
+                oldTicket.getPerson().setEyeColor(EyeColor.valueOf(newTicket.getPerson().getEyeColor().toUpperCase()));
+            if (newTicket.getPerson().getNationality() != null)
+                oldTicket.getPerson().setNationality(Country.valueOf(newTicket.getPerson().getNationality().toUpperCase()));
+
+            oldTicket.getPerson().setLocation(new Location());
+            oldTicket.getPerson().getLocation().setX(newTicket.getPerson().getLocation().getX());
+            oldTicket.getPerson().getLocation().setZ(newTicket.getPerson().getLocation().getZ());
+
+            if (newTicket.getPerson().getLocation().getY() != null)
+                oldTicket.getPerson().getLocation().setY(newTicket.getPerson().getLocation().getY());
+            if (newTicket.getPerson().getLocation().getName() != null)
+                oldTicket.getPerson().getLocation().setName(newTicket.getPerson().getLocation().getName());
+        } else {
+            List<String> errors = checkNecessaryFieldsInPerson(newTicket);
+            throw new BadPersonException(errors);
+        }
+
+    }
+
+    private static List<String> checkNecessaryFieldsInPerson(TicketWriteUpdate newTicket) {
+        List<String> errors = new ArrayList<>();
+        String message = ": Обязательно для заполнения";
+        if (newTicket.getPerson().getHeight() == null) errors.add("person.height" + message);
+        if (newTicket.getPerson().getHairColor() == null) errors.add("person.hairColor" + message);
+        if (newTicket.getPerson().getLocation() == null) errors.add("person.location" + message);
+        else {
+            if (newTicket.getPerson().getLocation().getX() == null) errors.add("person.location.x" + message);
+            if (newTicket.getPerson().getLocation().getZ() == null) errors.add("person.location.z" + message);
+        }
+        return errors;
+    }
+
+    private void updatePerson(Ticket oldTicket, TicketWriteUpdate newTicket) {
+        if (newTicket.getPerson() != null) {
+            if (oldTicket.getPerson() == null) {
+                updatePersonIfNotExists(oldTicket, newTicket);
+            } else {
+                updatePersonAndLocationIfExists(oldTicket, newTicket);
+            }
+        }
+    }
+
+    private void isIntegerPositive(Integer num, String filedName) {
+        if (num < 0) {
+            throw new InvalidParameterException("Значение " + filedName + " должно быть больше нуля");
+        }
+    }
 }

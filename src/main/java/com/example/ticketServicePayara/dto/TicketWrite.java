@@ -39,7 +39,4 @@ public class TicketWrite implements Serializable {
     @Valid
     private PersonWrite person;
 
-    @Min(value = 0, message = "Значение должно быть больше 0")
-    private Integer eventId;
-
 }

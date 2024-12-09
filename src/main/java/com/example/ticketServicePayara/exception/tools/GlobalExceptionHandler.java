@@ -95,6 +95,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+    @ExceptionHandler(BadPersonException.class)
+    public ResponseEntity<Object> handleNoPersonException(Exception ex) {
+        BadPersonException badPersonException = (BadPersonException) ex;
+        ErrorResponseArray body = new ErrorResponseArray(BAD_REQUEST, badPersonException.getErrors(), getFullURL());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(NoFieldException.class)
     public ResponseEntity<Object> handleNoFieldException(Exception ex) {
         CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Поля " + ex.getMessage() + " нет.", getFullURL());
@@ -108,6 +115,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoValueException.class)
+    public ResponseEntity<Object> handleNoValueException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Нет значения для фильтрации", getFullURL());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+
     @ExceptionHandler(NoSortMethodException.class)
     public ResponseEntity<Object> handleNoSortMethodException(Exception ex) {
         CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Метода сортировки " + ex.getMessage() + " нет.", getFullURL());
@@ -119,6 +133,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         CustomErrorResponse body = new CustomErrorResponse(NOT_FOUND, ex.getMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleRuntimeEx(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage(), getFullURL());
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex) {
