@@ -116,7 +116,7 @@ public class TicketService {
         isIntegerPositive(id, "event id");
         List<Long> ids = getAll().stream().filter(ticket -> ticket.getEventId() == id).map(ticket -> ticket.getId()).toList();
         for (Long ticketId : ids) {
-            deleteById(id);
+            deleteById(ticketId.intValue());
         }
     }
 
