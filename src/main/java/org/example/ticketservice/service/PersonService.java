@@ -1,5 +1,6 @@
 package org.example.ticketservice.service;
 
+import org.example.ticketservice.exception.TicketNotFoundException;
 import org.example.ticketservice.model.Person;
 import org.example.ticketservice.enums.*;
 import org.example.ticketservice.repo.PersonRepo;
@@ -25,7 +26,7 @@ public class PersonService {
     }
     public Person getById(int id){
         if(personRepo.findById(id).isPresent()) return personRepo.findById(id).get();
-        else return null;
+        else throw new TicketNotFoundException("Человек с id = " + id + " не найден.");
     }
     @Transactional
     public Person save(Person entity){

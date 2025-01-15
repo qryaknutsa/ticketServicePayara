@@ -60,7 +60,7 @@ public class TicketService {
     public Ticket getById(int id) {
         isIntegerPositive(id, "id");
         if(ticketRepo.findById(id).isPresent()) return ticketRepo.findById(id).get();
-        else return null;
+        else throw new TicketNotFoundException("Билет с id = " + id + " не найден.");
     }
 
 

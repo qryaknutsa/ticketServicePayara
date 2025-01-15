@@ -1,0 +1,32 @@
+{
+  "datacenter": "dc1",
+  "data_dir": "/mnt/c/Users/toric/IdeaProjects/rbdip/ticketService/consul/data",
+  "log_level": "INFO",
+  "node_name": "consul-server-1",
+  "server": true,
+  "ui": true,
+  "addresses": {
+    "http": "0.0.0.0"
+  },
+  "ports": {
+    "http": 8500,
+    "dns": 8600,
+    "serf_lan": 8301,
+    "serf_wan": 8302,
+    "server": 8300
+  },
+  "bootstrap_expect": 1,
+  "retry_join": ["consul-server-2", "consul-server-3"],
+  "client_addr": "0.0.0.0",
+  "bind_addr": "{{ GetPrivateIP }}",
+  "leave_on_terminate": true,
+  "enable_script_checks": true,
+  "dns_config": {
+    "enable_truncate": true,
+    "only_passing": true
+  },
+  "telemetry": {
+    "disable_hostname": true,
+    "prometheus_retention_time": "24h"
+  }
+}

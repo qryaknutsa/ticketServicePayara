@@ -10,6 +10,7 @@ import org.example.ticketservice.model.*;
 import org.example.ticketservice.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,13 @@ public class TicketController {
     private TicketService ticketService;
 
 
+    @GetMapping("qwe")
+    public ResponseEntity<?> getQwe() {
+        return ResponseEntity.ok("2 service");
+    }
+
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllTickets(@RequestParam(required = false) Integer size, @RequestParam(required = false) Integer page, @RequestParam(required = false) String sort, @RequestParam(required = false) String filter) {
         List<Ticket> list = ticketService.getAllFilteredSortedPaginated(size, page, sort, filter);
         return ResponseEntity.ok(list);
@@ -35,6 +42,7 @@ public class TicketController {
 
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveTicket(@Valid @RequestBody TicketWrite ticket) {
         Ticket t = ticketService.save(TicketWriteConverter.toTicket(ticket));
         return ResponseEntity.status(201).body(t);
