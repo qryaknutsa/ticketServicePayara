@@ -42,7 +42,7 @@ public class TicketController {
 
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveTicket(@Valid @RequestBody TicketWrite ticket) {
         Ticket t = ticketService.save(TicketWriteConverter.toTicket(ticket));
         return ResponseEntity.status(201).body(t);
