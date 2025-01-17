@@ -42,7 +42,7 @@ public class TicketController {
 
 
     @PostMapping
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveTicket(@Valid @RequestBody TicketWrite ticket) {
         Ticket t = ticketService.save(TicketWriteConverter.toTicket(ticket));
         return ResponseEntity.status(201).body(t);
@@ -57,12 +57,14 @@ public class TicketController {
 
 
     @PatchMapping(value = "{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateTicket(@PathVariable int id, @RequestBody @Valid TicketWriteUpdate ticket) {
         Ticket t = ticketService.update(id, ticket);
         return ResponseEntity.status(203).body(t);
     }
 
     @DeleteMapping(value = "{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteTicketById(@PathVariable int id) {
         ticketService.deleteById(id);
         return ResponseEntity.status(204).body(id);
@@ -89,12 +91,14 @@ public class TicketController {
     }
 
     @PostMapping(value = "bulk/{num}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveTickets(@Valid @RequestBody TicketWithEventWrite ticket, @PathVariable int num) {
         List<Long> ids = ticketService.saveTickets(TicketWithEventConverter.toTicket(ticket), num);
         return ResponseEntity.status(201).body(ids);
     }
 
     @DeleteMapping(value = "bulk/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteTicketsByEventId(@PathVariable int id) {
         ticketService.deleteTicketsByEventIds(id);
         return ResponseEntity.status(204).build();

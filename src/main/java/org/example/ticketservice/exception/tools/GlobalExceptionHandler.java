@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,6 +32,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     String BAD_REQUEST = "Некорректные данные";
     String INTERNAL_SERVER_ERROR = "Внутренняя ошибка сервера";
     String NOT_FOUND = "Объект не найден";
+    String FORBIDDEN = "Ошибка авторизации";
 
 
     @Override
@@ -97,6 +99,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleInvalidParameterException(Exception ex) {
         CustomErrorResponse body = new CustomErrorResponse(UNPROCESSABLE_ENTITY, ex.getMessage(), getFullURL());
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(Exception ex) {
+        CustomErrorResponse body = new CustomErrorResponse(FORBIDDEN, "Недостаточно прав для выполнения этого действия", getFullURL());
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(BadPersonException.class)

@@ -1,6 +1,7 @@
 package org.example.ticketservice.security;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ticketservice.exception.tools.CustomAccessDeniedHandler;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +28,14 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    JwtAuthConverter jwtAuthConverter;
+    private final JwtAuthConverter jwtAuthConverter;
+
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler, JwtAuthConverter jwtAuthConverter) {
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.jwtAuthConverter = jwtAuthConverter;
+    }
 
     @Bean
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
@@ -47,7 +54,10 @@ public class SecurityConfig {
                 .oauth2ResourceServer(t -> {
                     t.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter));
                 })
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())); // Используйте ВАШ CorsConfigurationSource
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.accessDeniedHandler(accessDeniedHandler) // Регистрируем обработчик
+                );
 
         return http.build();
     }
