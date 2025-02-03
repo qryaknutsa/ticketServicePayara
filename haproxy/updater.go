@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -38,7 +39,7 @@ type HealthResponse struct {
 }
 
 const (
-	serviceLine   = 36
+	serviceLine   = 34
 	passingStatus = "passing"
 )
 
@@ -69,17 +70,15 @@ func main() {
 		time.Sleep(duration)
 		results, ips := getConsulPODs(serviceList, consulAddr)
 		config := generateHAProxyConfig(results)
-		if compareMaps(prevIPs, ips) {
-			continue
-		}
+		time.Sleep(5 * time.Second)
 		prevPID = readPid("/usr/local/etc/haproxy/current.txt")
 		filename := writeToFile(config, configPath)
 		reloadConfig(filename, fmt.Sprintf("%d", prevPID))
-		go func(filename string) {
-			f := filename
-			time.Sleep(duration)
-			os.Remove(f)
-		}(filename)
+// 		go func(filename string) {
+// 			f := filename
+// 			time.Sleep(duration)
+// 			os.Remove(f)
+// 		}(filename)
 		prevIPs = ips
 	}
 }
@@ -96,67 +95,72 @@ func readPid(f string) int {
 
 func reloadConfig(filename string, prevPID string) {
 	cmd := exec.Command("sh", "-c", "haproxy -f "+filename+" -D -p /usr/local/etc/haproxy/current.txt -sf "+prevPID)
+	log.Println(filename)
 	cmd.Start()
 	log.Println(cmd.Args)
 	log.Println("HAProxy config reloaded")
 }
 
+
 func getConsulPODs(serviceList []string, consulAddr string) (map[string]map[string]map[string]string, map[string]struct{}) {
 	results := make(map[string]map[string]map[string]string, len(serviceList))
 	ips := make(map[string]struct{}, len(serviceList))
-	for {
-		for _, serviceName := range serviceList {
-			url := fmt.Sprintf("http://%s/v1/health/service/%s", consulAddr, serviceName)
-			resp, err := http.Get(url)
 
-			if err != nil {
-				log.Printf("Error fetching health for service %s: %v", serviceName, err)
-				continue
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				log.Printf("Service %s returned non-200 status: %d", serviceName, resp.StatusCode)
-				continue
-			}
-
-			var healthResponses []HealthResponse
-			if err := json.NewDecoder(resp.Body).Decode(&healthResponses); err != nil {
-				log.Printf("Error decoding JSON response for service %s: %v", serviceName, err)
-				continue
-			}
-
-			for _, health := range healthResponses {
-				id := health.Service.ID
-				address := health.Service.Address
-				port := health.Service.Port
-
-				allPassing := true
-				for _, check := range health.Checks {
-					if check.Status != passingStatus {
-						allPassing = false
-						break
-					}
-				}
-
-				if allPassing {
-					if _, ok := results[serviceName]; !ok {
-						results[serviceName] = make(map[string]map[string]string)
-					}
-					results[serviceName][id] = map[string]string{
-						"ID":      id,
-						"Address": address,
-						"Port":    fmt.Sprintf("%d", port),
-					}
-					ips[address] = struct{}{}
-				} else {
-					delete(results, id)
-				}
-			}
+	for _, serviceName := range serviceList {
+		// Формирование URL для запроса
+		url := fmt.Sprintf("http://%s/v1/health/service/%s", consulAddr, serviceName)
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Printf("Error fetching data for service %s: %v", serviceName, err)
+			continue
 		}
 
-		return results, ips
+		// Закрытие тела ответа после чтения
+		defer resp.Body.Close()
+
+		// Проверка статуса ответа
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Service %s returned non-200 status: %d", serviceName, resp.StatusCode)
+			continue
+		}
+
+		// Чтение и декодирование ответа
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Error reading response body for service %s: %v", serviceName, err)
+			continue
+		}
+
+		var healthResponses []HealthResponse
+		if err := json.Unmarshal(body, &healthResponses); err != nil {
+			log.Printf("Error decoding JSON response for service %s: %v", serviceName, err)
+			continue
+		}
+
+		// Заполнение данных о сервисах
+		for _, health := range healthResponses {
+			id := health.Service.ID
+			address := health.Service.Address
+			port := health.Service.Port
+
+			if _, ok := results[serviceName]; !ok {
+				results[serviceName] = make(map[string]map[string]string)
+			}
+			results[serviceName][id] = map[string]string{
+				"ID":      id,
+				"Address": address,
+				"Port":    fmt.Sprintf("%d", port),
+			}
+			ips[address] = struct{}{}
+		}
 	}
+    for serviceName, service := range results {
+        fmt.Printf("Сервис: %s\n", serviceName)
+        for id, instance := range service {
+            fmt.Printf("  %s: %s:%s\n", id, instance["Address"], instance["Port"])
+        }
+    }
+	return results, ips
 }
 
 func generateHAProxyConfig(results map[string]map[string]map[string]string) []string {
@@ -166,15 +170,15 @@ func generateHAProxyConfig(results map[string]map[string]map[string]string) []st
 		config = append(config, fmt.Sprintf("backend %s_back", name))
 		config = append(config, "    balance roundrobin")
 		for _, instance := range info {
-// 			config = append(config, fmt.Sprintf("    server %s %s:%s ssl verify none maxconn 10", instance["ID"], instance["Address"], instance["Port"]))
-			config = append(config, fmt.Sprintf("    server %s host.docker.internal:%s check", instance["ID"], instance["Port"]))
-
+			config = append(config, fmt.Sprintf("    server %s %s:%s verify none maxconn 10", instance["ID"], instance["Address"], instance["Port"]))
 		}
 		config = append(config, "")
 	}
 
 	return config
 }
+
+
 
 func writeToFile(config []string, path string) string {
 	file, err := os.Open(path)
@@ -227,6 +231,7 @@ func writeToFile(config []string, path string) string {
 	log.Printf("File updated new config: %s", strings.Join(config, "\n"))
 	return filename
 }
+
 
 func compareMaps(a, b map[string]struct{}) bool {
 	if len(a) != len(b) {
