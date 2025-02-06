@@ -24,17 +24,13 @@ public class Person implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @CustomNotNull
-    @Min(value = 50, message = "Значение должно быть больше 50")
-    @Max(value = 300, message = "Значение должно быть меньше 300")
     @Column(nullable = false)
-    private Integer height;
+    private int height;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "eyeColor")
     private EyeColor eyeColor;
 
-    @CustomNotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "hairColor", nullable = false)
     private HairColor hairColor;
@@ -43,8 +39,6 @@ public class Person implements Serializable {
     @Column
     private Country nationality;
 
-    @CustomNotNull
-    @Valid
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="location",nullable = false)
     private Location location;

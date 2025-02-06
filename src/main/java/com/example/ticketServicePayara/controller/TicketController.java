@@ -3,7 +3,6 @@ package com.example.ticketServicePayara.controller;
 import com.example.ticketServicePayara.converter.TicketWithEventConverter;
 import com.example.ticketServicePayara.converter.TicketWriteConverter;
 import com.example.ticketServicePayara.dao.TicketDao;
-//import com.example.ticketServicePayara.dto.TicketIds;
 import com.example.ticketServicePayara.dto.TicketWithEventWrite;
 import com.example.ticketServicePayara.dto.TicketWrite;
 import com.example.ticketServicePayara.dto.TicketWriteUpdate;
@@ -44,7 +43,7 @@ public class TicketController {
 
     @GetMapping(value = "{id}")
     public ResponseEntity<?> getTicketById(@PathVariable int id) {
-        return ResponseEntity.status(200).body(TicketWithEventConverter.toTicketWithEventWrite(ticketService.getById(id)));
+        return ResponseEntity.status(200).body(ticketService.getById(id));
     }
 
 
@@ -83,7 +82,7 @@ public class TicketController {
 
     @PostMapping(value = "bulk/{num}")
     public ResponseEntity<?> saveTickets(@Valid @RequestBody TicketWithEventWrite ticket, @PathVariable int num) {
-        List<Integer> ids = ticketService.saveTickets(TicketWithEventConverter.toTicket(ticket), num);
+        List<Long> ids = ticketService.saveTickets(TicketWithEventConverter.toTicket(ticket), num);
         return ResponseEntity.status(201).body(ids);
     }
 

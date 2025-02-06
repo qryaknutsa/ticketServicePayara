@@ -1,11 +1,9 @@
 package com.example.ticketServicePayara.model;
 
 import com.example.ticketServicePayara.enums.TicketType;
-import com.example.ticketServicePayara.validation.annotation.CustomNotNull;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 
@@ -13,50 +11,40 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 
-@Data
+
 @Entity
 @Table(name = "ticket")
 public class Ticket implements Serializable {
     @Id
     @Column(nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @CustomNotNull
-    @Size(min = 1, message = "Значение не должно быть пустым.")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 
-    @CustomNotNull
-    @Valid
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "coordinates", nullable = false)
     private Coordinates coordinates;
 
     @Column(name = "creationDate", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    @JsonProperty("creationDate")
     private ZonedDateTime creationDate = ZonedDateTime.now();
 
-    @CustomNotNull
-    @Positive(message = "Значение должен быть больше нуля")
-    @Max(value = 2147483647, message = "Значение не может быть больше возможного 2147483647")
     @Column(nullable = false)
-    private Integer price;
+    private int price;
 
-    @CustomNotNull
-    @DecimalMin(value = "0", message = "Значение не может быть меньше возможного 0")
-    @DecimalMax(value = "100", message = "Значение не может быть больше возможного 100")
     @Column(nullable = false)
-    private Double discount;
+    private double discount;
 
     @Column
-    private Boolean refundable;
+    private boolean refundable = false;
 
     @Enumerated(EnumType.STRING)
     @Column
     private TicketType type;
 
-    @Valid
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "person")
     private Person person;
@@ -74,7 +62,7 @@ public class Ticket implements Serializable {
         this.price = ticket.getPrice();
         this.coordinates = new Coordinates(ticket.getCoordinates());
         this.discount = ticket.getDiscount();
-        if(ticket.getRefundable() != null) this.refundable = ticket.getRefundable();
+        this.refundable = ticket.isRefundable();
         if(ticket.getType() != null) this.type = ticket.getType();
         if (ticket.getPerson() != null) this.person = new Person(ticket.getPerson());
         this.eventId = ticket.getEventId();
@@ -88,5 +76,86 @@ public class Ticket implements Serializable {
         this.refundable = refundable;
         this.type = type;
         this.person = person;
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public ZonedDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(ZonedDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+
+    public boolean isRefundable() {
+        return refundable;
+    }
+
+    public void setRefundable(boolean refundable) {
+        this.refundable = refundable;
+    }
+
+    public TicketType getType() {
+        return type;
+    }
+
+    public void setType(TicketType type) {
+        this.type = type;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public int getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
     }
 }

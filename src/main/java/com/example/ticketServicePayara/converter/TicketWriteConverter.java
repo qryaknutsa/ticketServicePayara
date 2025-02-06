@@ -14,6 +14,7 @@ public class TicketWriteConverter {
         if (ticketWrite.getType() != null) ticket.setType(TicketType.valueOf(ticketWrite.getType().toUpperCase()));
         ticket.setDiscount(ticketWrite.getDiscount());
         if (ticketWrite.getRefundable() != null) ticket.setRefundable(ticketWrite.getRefundable());
+        else ticket.setRefundable(false);
         ticket.setCoordinates(CoordinatesWriteConverter.toCoordinates(ticketWrite.getCoordinates()));
         if (ticketWrite.getPerson() != null) ticket.setPerson(PersonWriteConverter.toPerson(ticketWrite.getPerson()));
         ticket.setEventId(0);
@@ -27,7 +28,7 @@ public class TicketWriteConverter {
         ticketWrite.setPrice(ticket.getPrice());
         if (ticket.getType() != null) ticketWrite.setType(ticket.getType().name().toUpperCase());
         ticketWrite.setDiscount(ticket.getDiscount());
-        if (ticket.getRefundable() != null) ticketWrite.setRefundable(ticket.getRefundable());
+        ticketWrite.setRefundable(ticket.isRefundable());
         ticketWrite.setCoordinates(CoordinatesWriteConverter.toCoordinatesWrite(ticket.getCoordinates()));
         if (ticket.getPerson() != null) ticketWrite.setPerson(PersonWriteConverter.toPersonWrite(ticket.getPerson()));
         return ticketWrite;

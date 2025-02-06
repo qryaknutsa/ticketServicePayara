@@ -74,10 +74,7 @@ public class TicketDao {
         isIntegerPositive(id, "id");
         Ticket ticket = entityManager.find(Ticket.class, id);
         if (ticket == null) throw new TicketNotFoundException("По вашему запросу билет не найден.");
-        else {
-            TicketWithEventWrite t = TicketWithEventConverter.toTicketWithEventWrite(ticket);
-            return ticket;
-        }
+        else return ticket;
     }
 
 
@@ -99,10 +96,10 @@ public class TicketDao {
 
 
     @Transactional
-    public List<Integer> saveTickets(Ticket entity, int num) {
+    public List<Long> saveTickets(Ticket entity, int num) {
         isIntegerPositive(num, "число билетов");
 
-        List<Integer> ids = new ArrayList<>();
+        List<Long> ids = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             Ticket newTicket = new Ticket(entity);
             entityManager.persist(newTicket);

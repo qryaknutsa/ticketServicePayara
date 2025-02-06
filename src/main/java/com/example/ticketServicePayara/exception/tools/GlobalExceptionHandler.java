@@ -79,7 +79,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (cause instanceof JsonMappingException) {
             String message = cause.getMessage();
             if (message.contains("Numeric value")) {
-                CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Значение превышает возможный диапазон: " + ex.getCause().getLocalizedMessage(), getFullURL());
+                String me = ex.getCause().getLocalizedMessage().split("\n")[0];
+                CustomErrorResponse body = new CustomErrorResponse(BAD_REQUEST, "Значение превышает возможный диапазон: " + me, getFullURL());
                 return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
             }
         } else {
